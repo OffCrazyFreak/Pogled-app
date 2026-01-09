@@ -7,7 +7,7 @@ const AccessibilityContext = createContext();
 const ACCESSIBILITY_STORAGE_KEY = "DRUMRE_projekt";
 
 const defaultSettings = {
-  theme: "system",
+  theme: "dark",
 };
 
 export function AccessibilityProvider({ children }) {
@@ -27,6 +27,12 @@ export function AccessibilityProvider({ children }) {
         ) {
           setSettings(parsedSettings);
         }
+      } else {
+        // No stored settings, detect system preference and set theme
+        const systemPrefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        setSettings({ theme: systemPrefersDark ? "dark" : "light" });
       }
     } catch (error) {
       console.warn("Failed to load accessibility settings:", error);
