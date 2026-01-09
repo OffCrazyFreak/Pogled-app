@@ -5,11 +5,9 @@ import { cn } from "@/lib/utils";
 
 const MAX_STARS = 10;
 
-const Rating = ({ rate, className }) => {
-  if (!rate) return;
-
+export function Rating({ rate, className, onChange, interactive = false }) {
   const renderStars = () => {
-    const fullStars = Math.floor(rate);
+    const fullStars = Math.floor(rate || 0);
     const emptyStars = MAX_STARS - fullStars;
 
     const stars = [];
@@ -18,7 +16,11 @@ const Rating = ({ rate, className }) => {
       stars.push(
         <Star
           key={`rating-star-full-${i}`}
-          className="fill-foreground stroke-foreground"
+          className={cn(
+            "fill-yellow-400 stroke-yellow-400",
+            interactive && "cursor-pointer hover:scale-110 transition-transform"
+          )}
+          onClick={() => interactive && onChange && onChange(i + 1)}
         />
       );
     }
@@ -27,7 +29,11 @@ const Rating = ({ rate, className }) => {
       stars.push(
         <Star
           key={`rating-star-empty-${i}`}
-          className="fill-foreground/15 stroke-foreground/15"
+          className={cn(
+            "fill-foreground/15 stroke-foreground/15",
+            interactive && "cursor-pointer hover:scale-110 transition-transform"
+          )}
+          onClick={() => interactive && onChange && onChange(fullStars + i + 1)}
         />
       );
     }
@@ -45,6 +51,4 @@ const Rating = ({ rate, className }) => {
       {renderStars()}
     </div>
   );
-};
-
-export { Rating };
+}

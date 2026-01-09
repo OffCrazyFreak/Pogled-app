@@ -3,10 +3,51 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Star } from "lucide-react";
 import { Rating } from "@/components/shadcnblocks/rating";
+import { useState, useEffect } from "react";
 
 export function MovieCard({ movie, onDelete }) {
-  // Simulate liked state randomly
-  const isLiked = Math.random() > 0.5;
+  const [isSaved, setIsSaved] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+
+  useEffect(() => {
+    const savedMovies = JSON.parse(localStorage.getItem("savedMovies") || "[]");
+    setIsSaved(savedMovies.includes(movie._id));
+
+    const ratings = JSON.parse(localStorage.getItem("movieRatings") || "{}");
+    setUserRating(ratings[movie._id] || 0);
+  }, [movie._id]);
+
+  function toggleSave() {
+    const savedMovies = JSON.parse(localStorage.getItem("savedMovies") || "[]");
+    let newSavedMovies;
+    if (isSaved) {
+      newSavedMovies = savedMovies.filter((id) => id !== movie._id);
+    } else {
+      newSavedMovies = [...savedMovies, movie._id];
+    }
+    localStorage.setItem("savedMovies", JSON.stringify(newSavedMovies));
+    setIsSaved(!isSaved);
+    // Dispatch custom event for other components to listen
+    window.dispatchEvent(
+      new CustomEvent("savedMoviesChanged", { detail: newSavedMovies })
+    );
+  }
+
+  function handleRatingChange(newRating) {
+    const ratings = JSON.parse(localStorage.getItem("movieRatings") || "{}");
+    if (newRating === 0) {
+      delete ratings[movie._id];
+    } else {
+      ratings[movie._id] = newRating;
+    }
+    localStorage.setItem("movieRatings", JSON.stringify(ratings));
+    setUserRating(newRating);
+    // Dispatch custom event
+    window.dispatchEvent(
+      new CustomEvent("movieRatingsChanged", { detail: ratings })
+    );
+  }
+
   // Simulate random rating
   const randomRate = Math.random() * 10; // 0 to 10 stars
 
@@ -49,10 +90,15 @@ export function MovieCard({ movie, onDelete }) {
             </div>
           </div>
 
-          <Button variant="ghost" size="sm" className="p-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-1"
+            onClick={toggleSave}
+          >
             <Heart
               className={`size-4 sm:size-6 ${
-                isLiked
+                isSaved
                   ? "fill-red-500 stroke-red-500 dark:fill-red-900 dark:stroke-red-900"
                   : ""
               }`}
@@ -74,8 +120,14 @@ export function MovieCard({ movie, onDelete }) {
 
         <div className="mt-auto">
           <div className="my-2 flex items-center gap-2 text-sm flex-wrap">
-            {Math.floor(randomRate) === 0 ? "Nije ocijenjeno" : "Tvoja ocjena:"}
-            <Rating rate={randomRate} />
+            {userRating === 0
+              ? "Ocijeni:"
+              : `Tvoja ocjena (${userRating} / 10):`}
+            <Rating
+              rate={userRating}
+              interactive={true}
+              onChange={handleRatingChange}
+            />
           </div>
 
           <Button

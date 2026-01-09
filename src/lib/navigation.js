@@ -1,4 +1,4 @@
-import { Search, Heart, Eye } from "lucide-react";
+import { Search, Heart, Star } from "lucide-react";
 
 const navigationLinks = [
   {
@@ -7,14 +7,14 @@ const navigationLinks = [
     icon: Search,
   },
   {
-    title: "Omiljeni",
-    url: "/favorites",
+    title: "Spremljeno",
+    url: "/saved",
     icon: Heart,
   },
   {
-    title: "Gledano",
-    url: "/watched",
-    icon: Eye,
+    title: "Ocijenjeno",
+    url: "/rated",
+    icon: Star,
   },
 ];
 

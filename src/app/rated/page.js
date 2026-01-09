@@ -15,9 +15,9 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { SearchIcon, FileTextIcon } from "lucide-react";
+import { SearchIcon, FileTextIcon, StarIcon } from "lucide-react";
 
-export default function Explore() {
+export default function Watched() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -25,6 +25,7 @@ export default function Explore() {
     type: searchParams.get("type") || "",
     value: searchParams.get("value") || "",
   });
+  const [movieRatings, setMovieRatings] = useState({});
   const { movies, loading, fetchMovies, fetchAndSave, deleteMovie } =
     useMovies();
 
@@ -38,6 +39,30 @@ export default function Explore() {
         fetchMovies();
       }
     }
+    // Load movie ratings from localStorage
+    const ratings = JSON.parse(localStorage.getItem("movieRatings") || "{}");
+    setMovieRatings(ratings);
+
+    // Listen for storage changes
+    const handleStorageChange = () => {
+      const ratings = JSON.parse(localStorage.getItem("movieRatings") || "{}");
+      setMovieRatings(ratings);
+    };
+
+    // Listen for custom event
+    const handleMovieRatingsChanged = (event) => {
+      setMovieRatings(event.detail);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("movieRatingsChanged", handleMovieRatingsChanged);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener(
+        "movieRatingsChanged",
+        handleMovieRatingsChanged
+      );
+    };
   }, [status, searchParams]);
 
   const applyFilter = () => {
@@ -57,6 +82,18 @@ export default function Explore() {
     fetchMovies();
     router.push("?");
   };
+
+  const ratedMoviesList = movies.filter(
+    (movie) => movieRatings[movie._id] && movieRatings[movie._id] > 0
+  );
+
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+        <Spinner className="h-8 w-8" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -85,32 +122,31 @@ export default function Explore() {
           {filter.type && filter.value && (
             <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-2 dark:border-blue-800 dark:bg-blue-900/20">
               <p className="text-sm text-blue-900 dark:text-blue-300">
-                {movies.length === 0
+                {ratedMoviesList.length === 0
                   ? "Nema rezultata za odabrani filter."
-                  : `Pronađeno ${movies.length} ${
-                      movies.length === 1 ? "rezultat" : "rezultata"
+                  : `Pronađeno ${ratedMoviesList.length} ${
+                      ratedMoviesList.length === 1 ? "rezultat" : "rezultata"
                     }`}
               </p>
             </div>
           )}
-          {movies.length === 0 &&
-          (!filter.value || filter.value.length === 0) ? (
+          {ratedMoviesList.length === 0 ? (
             <Empty className="w-fit mx-auto border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 p-8 rounded-md">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <FileTextIcon className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+                  <StarIcon className="h-12 w-12 text-gray-400 dark:text-gray-500" />
                 </EmptyMedia>
                 <EmptyTitle className="text-base font-medium text-gray-900 dark:text-white">
-                  Nema filmova u bazi
+                  Nema ocijenjenih filmova
                 </EmptyTitle>
                 <EmptyDescription className="text-sm text-gray-500 dark:text-gray-400">
-                  Kliknite "Dohvati filmove" za početak
+                  Kliknite na zvjezdice da ocijenite filmove
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {movies.map((movie) => (
+              {ratedMoviesList.map((movie) => (
                 <MovieCard
                   key={movie._id}
                   movie={movie}

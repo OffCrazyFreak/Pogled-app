@@ -15,9 +15,9 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { SearchIcon, FileTextIcon } from "lucide-react";
+import { SearchIcon, FileTextIcon, HeartIcon } from "lucide-react";
 
-export default function Explore() {
+export default function Favorites() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -25,6 +25,7 @@ export default function Explore() {
     type: searchParams.get("type") || "",
     value: searchParams.get("value") || "",
   });
+  const [savedMovies, setSavedMovies] = useState([]);
   const { movies, loading, fetchMovies, fetchAndSave, deleteMovie } =
     useMovies();
 
@@ -38,6 +39,29 @@ export default function Explore() {
         fetchMovies();
       }
     }
+    // Load saved movies from localStorage
+    const saved = JSON.parse(localStorage.getItem("savedMovies") || "[]");
+    setSavedMovies(saved);
+
+    // Listen for storage changes
+    const handleStorageChange = () => {
+      const saved = JSON.parse(localStorage.getItem("savedMovies") || "[]");
+      setSavedMovies(saved);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    // Listen for custom event
+    const handleSavedMoviesChanged = (event) => {
+      setSavedMovies(event.detail);
+    };
+    window.addEventListener("savedMoviesChanged", handleSavedMoviesChanged);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener(
+        "savedMoviesChanged",
+        handleSavedMoviesChanged
+      );
+    };
   }, [status, searchParams]);
 
   const applyFilter = () => {
@@ -57,6 +81,10 @@ export default function Explore() {
     fetchMovies();
     router.push("?");
   };
+
+  const savedMoviesList = movies.filter((movie) =>
+    savedMovies.includes(movie._id)
+  );
 
   return (
     <div>
@@ -85,32 +113,31 @@ export default function Explore() {
           {filter.type && filter.value && (
             <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-2 dark:border-blue-800 dark:bg-blue-900/20">
               <p className="text-sm text-blue-900 dark:text-blue-300">
-                {movies.length === 0
+                {savedMoviesList.length === 0
                   ? "Nema rezultata za odabrani filter."
-                  : `Pronađeno ${movies.length} ${
-                      movies.length === 1 ? "rezultat" : "rezultata"
+                  : `Pronađeno ${savedMoviesList.length} ${
+                      savedMoviesList.length === 1 ? "rezultat" : "rezultata"
                     }`}
               </p>
             </div>
           )}
-          {movies.length === 0 &&
-          (!filter.value || filter.value.length === 0) ? (
+          {savedMoviesList.length === 0 ? (
             <Empty className="w-fit mx-auto border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 p-8 rounded-md">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <FileTextIcon className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+                  <HeartIcon className="h-12 w-12 text-gray-400 dark:text-gray-500" />
                 </EmptyMedia>
                 <EmptyTitle className="text-base font-medium text-gray-900 dark:text-white">
-                  Nema filmova u bazi
+                  Nema spremljenih filmova
                 </EmptyTitle>
                 <EmptyDescription className="text-sm text-gray-500 dark:text-gray-400">
-                  Kliknite "Dohvati filmove" za početak
+                  Kliknite na srce da spremite filmove
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {movies.map((movie) => (
+              {savedMoviesList.map((movie) => (
                 <MovieCard
                   key={movie._id}
                   movie={movie}
