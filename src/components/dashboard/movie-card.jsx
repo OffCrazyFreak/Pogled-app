@@ -74,7 +74,7 @@ export function MovieCard({ movie, onDelete }) {
 
         <div className="mt-auto">
           <div className="my-2 flex items-center gap-2 text-sm flex-wrap">
-            {Math.floor(randomRate) === 0 ? "Not rated yet" : "Your rating:"}
+            {Math.floor(randomRate) === 0 ? "Nije ocijenjeno" : "Tvoja ocjena:"}
             <Rating rate={randomRate} />
           </div>
 
