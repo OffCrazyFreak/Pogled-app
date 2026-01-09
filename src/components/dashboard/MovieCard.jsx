@@ -8,7 +8,7 @@ export function MovieCard({ movie, onDelete }) {
   // Simulate liked state randomly
   const isLiked = Math.random() > 0.5;
   // Simulate random rating
-  const randomRate = Math.random() * 4 + 1;
+  const randomRating = Math.random() * 5;
 
   return (
     <Card className="overflow-hidden">
@@ -71,11 +71,6 @@ export function MovieCard({ movie, onDelete }) {
             <div className="line-clamp-1 text-xs">{movie.genre}</div>
           )}
         </div>
-
-        <div className="mb-3">
-          <Rating rate={randomRate} />
-        </div>
-
         <Button
           onClick={() => onDelete(movie._id)}
           variant="destructive"

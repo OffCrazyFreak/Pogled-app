@@ -1,11 +1,9 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import SessionProvider from "@/components/SessionProvider";
+import { Providers } from "@/lib/providers";
 import { Toaster } from "@/components/ui/sonner";
-import { AccessibilityProvider } from "@/hooks/use-accessibility";
-import { ThemeApplier } from "@/components/theme-applier";
 import { Navbar } from "@/components/navbar";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 
 const geistSans = Geist({
@@ -29,24 +27,19 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AccessibilityProvider>
-          <ThemeApplier />
-          <SessionProvider>
-            <SidebarProvider>
-              <AppSidebar />
+        <Providers>
+          <AppSidebar />
 
-              <SidebarInset>
-                <Navbar />
+          <SidebarInset>
+            <Navbar />
 
-                <main className="mx-auto max-w-7xl p-2 sm:p-6 w-full">
-                  {children}
-                </main>
-              </SidebarInset>
-            </SidebarProvider>
+            <main className="mx-auto max-w-7xl p-2 sm:p-6 w-full">
+              {children}
+            </main>
+          </SidebarInset>
 
-            <Toaster />
-          </SessionProvider>
-        </AccessibilityProvider>
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );

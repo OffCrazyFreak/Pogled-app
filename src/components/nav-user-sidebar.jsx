@@ -5,6 +5,7 @@ import { useMovies } from "@/hooks/use-movies";
 import {
   BadgeCheck,
   Bell,
+  ChevronDown,
   ChevronsUpDown,
   CreditCard,
   Download,
@@ -87,13 +88,15 @@ export function NavUserSidebar() {
                     .join("")}
                 </AvatarFallback>
               </Avatar>
+
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">
                   {session?.user.name}
                 </span>
                 <span className="truncate text-xs">{session?.user.email}</span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4" />
+
+              <ChevronDown className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
 
