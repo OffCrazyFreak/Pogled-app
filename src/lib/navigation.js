@@ -1,10 +1,15 @@
-import { Search, Heart, Star } from "lucide-react";
+import { Search, Heart, Star, Sparkles } from "lucide-react";
 
 const navigationLinks = [
   {
     title: "Istraži",
     url: "/explore",
     icon: Search,
+  },
+  {
+    title: "Preporučeno",
+    url: "/preporuceno",
+    icon: Sparkles,
   },
   {
     title: "Spremljeno",
