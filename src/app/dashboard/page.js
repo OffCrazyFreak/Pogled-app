@@ -54,40 +54,14 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <DashboardHeader user={session.user} />
+      <DashboardHeader
+        user={session.user}
+        onFetchMovies={fetchAndSave}
+        loading={loading}
+      />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <Button onClick={fetchAndSave} disabled={loading}>
-              {loading ? (
-                <>
-                  <Spinner className="h-4 w-4" />
-                </>
-              ) : (
-                <>
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-                    />
-                  </svg>
-                  Dohvati filmove
-                </>
-              )}
-            </Button>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              10 iz TMDB + 10 iz OMDB
-            </span>
-          </div>
-
           <FilterSection
             filter={filter}
             setFilter={setFilter}
