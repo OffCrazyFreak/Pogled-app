@@ -14,13 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Drumre Lab 1 - Filmovi",
+  title: "Filmovi app",
   description: "Aplikacija za dohvat i upravljanje filmovima",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="hr">
+    <html lang="hr" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
