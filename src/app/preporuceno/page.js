@@ -59,12 +59,18 @@ export default function Recommended() {
   };
 
   // Get saved and rated movies to exclude from recommendations
-  const savedMovies = JSON.parse(localStorage.getItem("savedMovies") || "[]");
-  const movieRatings = JSON.parse(localStorage.getItem("movieRatings") || "{}");
+  const savedMovies = JSON.parse(
+    localStorage.getItem("DRUMREsavedMovies") || "[]"
+  );
+  const movieRatings = JSON.parse(
+    localStorage.getItem("DRUMREmovieRatings") || "{}"
+  );
 
   // Filter out movies that are already saved or rated
   const recommendedMovies = movies.filter(
-    (movie) => !savedMovies.includes(movie._id) && !movieRatings[movie._id]
+    (movie) =>
+      !savedMovies.some((item) => item.id === movie._id) &&
+      !movieRatings[movie._id]?.rating
   );
 
   return (

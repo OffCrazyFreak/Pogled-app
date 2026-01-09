@@ -10,46 +10,66 @@ export function MovieCard({ movie, onDelete }) {
   const [userRating, setUserRating] = useState(0);
 
   useEffect(() => {
-    const savedMovies = JSON.parse(localStorage.getItem("savedMovies") || "[]");
-    setIsSaved(savedMovies.includes(movie._id));
+    const personalData = JSON.parse(
+      localStorage.getItem("DRUMREtempMoviesPersonalData") ||
+        '{"ratedMovies":{},"savedMovies":{}}'
+    );
+    setIsSaved(!!personalData.savedMovies[movie._id]);
 
-    const ratings = JSON.parse(localStorage.getItem("movieRatings") || "{}");
-    setUserRating(ratings[movie._id] || 0);
+    setUserRating(personalData.ratedMovies[movie._id]?.rate || 0);
   }, [movie._id]);
 
   function toggleSave() {
-    const savedMovies = JSON.parse(localStorage.getItem("savedMovies") || "[]");
-    let newSavedMovies;
+    const personalData = JSON.parse(
+      localStorage.getItem("DRUMREtempMoviesPersonalData") ||
+        '{"ratedMovies":{},"savedMovies":{}}'
+    );
     if (isSaved) {
-      newSavedMovies = savedMovies.filter((id) => id !== movie._id);
+      delete personalData.savedMovies[movie._id];
     } else {
-      newSavedMovies = [...savedMovies, movie._id];
+      personalData.savedMovies[movie._id] = {
+        timestamp: Date.now(),
+        like: true,
+      };
     }
-    localStorage.setItem("savedMovies", JSON.stringify(newSavedMovies));
+    localStorage.setItem(
+      "DRUMREtempMoviesPersonalData",
+      JSON.stringify(personalData)
+    );
     setIsSaved(!isSaved);
     // Dispatch custom event for other components to listen
     window.dispatchEvent(
-      new CustomEvent("savedMoviesChanged", { detail: newSavedMovies })
+      new CustomEvent("savedMoviesChanged", {
+        detail: personalData.savedMovies,
+      })
     );
   }
 
   function handleRatingChange(newRating) {
-    const ratings = JSON.parse(localStorage.getItem("movieRatings") || "{}");
+    const personalData = JSON.parse(
+      localStorage.getItem("DRUMREtempMoviesPersonalData") ||
+        '{"ratedMovies":{},"savedMovies":{}}'
+    );
     if (newRating === 0) {
-      delete ratings[movie._id];
+      delete personalData.ratedMovies[movie._id];
     } else {
-      ratings[movie._id] = newRating;
+      personalData.ratedMovies[movie._id] = {
+        rate: newRating,
+        timestamp: Date.now(),
+      };
     }
-    localStorage.setItem("movieRatings", JSON.stringify(ratings));
+    localStorage.setItem(
+      "DRUMREtempMoviesPersonalData",
+      JSON.stringify(personalData)
+    );
     setUserRating(newRating);
     // Dispatch custom event
     window.dispatchEvent(
-      new CustomEvent("movieRatingsChanged", { detail: ratings })
+      new CustomEvent("movieRatingsChanged", {
+        detail: personalData.ratedMovies,
+      })
     );
   }
-
-  // Simulate random rating
-  const randomRate = Math.random() * 10; // 0 to 10 stars
 
   return (
     <Card className="overflow-hidden">

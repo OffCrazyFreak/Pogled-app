@@ -40,13 +40,19 @@ export default function Watched() {
       }
     }
     // Load movie ratings from localStorage
-    const ratings = JSON.parse(localStorage.getItem("movieRatings") || "{}");
-    setMovieRatings(ratings);
+    const personalData = JSON.parse(
+      localStorage.getItem("DRUMREtempMoviesPersonalData") ||
+        '{"ratedMovies":{},"savedMovies":{}}'
+    );
+    setMovieRatings(personalData.ratedMovies);
 
     // Listen for storage changes
     const handleStorageChange = () => {
-      const ratings = JSON.parse(localStorage.getItem("movieRatings") || "{}");
-      setMovieRatings(ratings);
+      const personalData = JSON.parse(
+        localStorage.getItem("DRUMREtempMoviesPersonalData") ||
+          '{"ratedMovies":{},"savedMovies":{}}'
+      );
+      setMovieRatings(personalData.ratedMovies);
     };
 
     // Listen for custom event
@@ -84,7 +90,7 @@ export default function Watched() {
   };
 
   const ratedMoviesList = movies.filter(
-    (movie) => movieRatings[movie._id] && movieRatings[movie._id] > 0
+    (movie) => movieRatings[movie._id]?.rate && movieRatings[movie._id].rate > 0
   );
 
   if (status === "loading") {

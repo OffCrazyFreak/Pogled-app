@@ -40,13 +40,19 @@ export default function Favorites() {
       }
     }
     // Load saved movies from localStorage
-    const saved = JSON.parse(localStorage.getItem("savedMovies") || "[]");
-    setSavedMovies(saved);
+    const personalData = JSON.parse(
+      localStorage.getItem("DRUMREtempMoviesPersonalData") ||
+        '{"ratedMovies":{},"savedMovies":{}}'
+    );
+    setSavedMovies(personalData.savedMovies);
 
     // Listen for storage changes
     const handleStorageChange = () => {
-      const saved = JSON.parse(localStorage.getItem("savedMovies") || "[]");
-      setSavedMovies(saved);
+      const personalData = JSON.parse(
+        localStorage.getItem("DRUMREtempMoviesPersonalData") ||
+          '{"ratedMovies":{},"savedMovies":{}}'
+      );
+      setSavedMovies(personalData.savedMovies);
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -82,9 +88,7 @@ export default function Favorites() {
     router.push("?");
   };
 
-  const savedMoviesList = movies.filter((movie) =>
-    savedMovies.includes(movie._id)
-  );
+  const savedMoviesList = movies.filter((movie) => savedMovies[movie._id]);
 
   return (
     <div>
