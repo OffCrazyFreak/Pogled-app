@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 export function MovieCard({ movie, onDelete }) {
   return (
     <Card className="overflow-hidden">
-      <div className="relative h-56 w-full">
+      <div className="relative h-24 sm:h-56 w-full">
         {movie.poster ? (
           <img
             src={movie.poster}
