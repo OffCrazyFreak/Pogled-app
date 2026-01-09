@@ -6,8 +6,11 @@ import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { NavUserNavbar } from "@/components/nav-user-navbar";
 import { navigationLinks } from "@/lib/navigation";
+import { usePathname } from "next/navigation";
 
 export function Navbar() {
+  const pathname = usePathname();
+
   return (
     <header className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
       <div className="mx-auto flex max-w-7xl items-center justify-between p-2 sm:px-6 lg:px-8">
@@ -22,9 +25,17 @@ export function Navbar() {
               <Link
                 key={item.title}
                 href={item.url}
-                className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white flex items-center gap-1"
+                className={`hover:text-gray-900 dark:hover:text-white flex items-center gap-1 ${
+                  pathname.includes(item.url)
+                    ? "text-primary dark:text-foreground font-bold"
+                    : ""
+                }`}
               >
-                <item.icon className="size-4 mr-1" />
+                <item.icon
+                  className={`mr-1 ${
+                    pathname.includes(item.url) ? "size-5" : "size-4"
+                  }`}
+                />
                 {item.title}
               </Link>
             ))}
