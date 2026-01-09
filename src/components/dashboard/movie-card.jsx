@@ -1,14 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
+import { Heart, Star } from "lucide-react";
 import { Rating } from "@/components/shadcnblocks/rating";
 
 export function MovieCard({ movie, onDelete }) {
   // Simulate liked state randomly
   const isLiked = Math.random() > 0.5;
   // Simulate random rating
-  const randomRate = Math.random() * 4 + 1;
+  const randomRate = Math.random() * 10; // 0 to 10 stars
 
   return (
     <Card className="overflow-hidden">
@@ -63,7 +63,7 @@ export function MovieCard({ movie, onDelete }) {
         <div className="mb-3 space-y-1 text-sm text-gray-600 dark:text-gray-400">
           {movie.rating > 0 && (
             <div className="flex items-center gap-1.5">
-              <span className="text-yellow-500">★</span>
+              <Star className="size-4 fill-yellow-400 stroke-yellow-400" />
               <span>{movie.rating.toFixed(1)}/10</span>
             </div>
           )}
@@ -72,17 +72,19 @@ export function MovieCard({ movie, onDelete }) {
           )}
         </div>
 
-        <div className="mb-3">
-          <Rating rate={randomRate} />
-        </div>
+        <div className="mt-auto">
+          <div className="my-2 flex items-start sm:items-center gap-2 text-sm flex-col sm:flex-row">
+            Your rating: <Rating rate={randomRate} />
+          </div>
 
-        <Button
-          onClick={() => onDelete(movie._id)}
-          variant="destructive"
-          className="w-full mt-auto"
-        >
-          Obriši
-        </Button>
+          <Button
+            onClick={() => onDelete(movie._id)}
+            variant="destructive"
+            className="w-full mt-auto"
+          >
+            Obriši
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
