@@ -14,7 +14,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { TrendingUpIcon } from "lucide-react";
+import { TrendingUpIcon, Download, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +33,7 @@ export default function Popular() {
   const [timeRange, setTimeRange] = useState(
     searchParams.get("range") || "all"
   );
-  const { movies, loading, fetchMovies, deleteMovie } = useMovies();
+  const { movies, loading, fetchMovies, fetchAndSave, deleteMovie, deleteAll } = useMovies();
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -84,25 +84,48 @@ export default function Popular() {
 
   return (
     <div>
-      <div className="mb-4">
-        {/* Time Range Tabs */}
-        <div className="flex flex-wrap gap-2">
-          {TIME_RANGES.map((range) => (
+      <div className="mb-4 space-y-4">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          {/* Time Range Tabs */}
+          <div className="flex flex-wrap gap-2">
+            {TIME_RANGES.map((range) => (
+              <Button
+                key={range.key}
+                variant={timeRange === range.key ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleTimeRangeChange(range.key)}
+                className={cn(
+                  "transition-all",
+                  timeRange === range.key
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "hover:bg-muted"
+                )}
+              >
+                {range.label}
+              </Button>
+            ))}
+          </div>
+          <div className="flex gap-2">
             <Button
-              key={range.key}
-              variant={timeRange === range.key ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleTimeRangeChange(range.key)}
-              className={cn(
-                "transition-all",
-                timeRange === range.key
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "hover:bg-muted"
-              )}
+              onClick={fetchAndSave}
+              disabled={loading}
+              className="flex items-center gap-2"
             >
-              {range.label}
+              <Download className="h-4 w-4" />
+              {loading ? "Učitavanje..." : "Dohvati filmove"}
             </Button>
-          ))}
+            {movies.length > 0 && (
+              <Button
+                onClick={deleteAll}
+                disabled={loading}
+                variant="destructive"
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Obriši sve
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

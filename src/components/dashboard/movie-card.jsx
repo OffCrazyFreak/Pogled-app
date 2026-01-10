@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, Star } from "lucide-react";
+import { Heart, Star, Play, Eye, ThumbsUp, Users, Clock } from "lucide-react";
 import { Rating } from "@/components/shadcnblocks/rating";
 import { useState, useEffect } from "react";
 
@@ -37,7 +37,6 @@ export function MovieCard({ movie, onDelete }) {
       JSON.stringify(personalData)
     );
     setIsSaved(!isSaved);
-    // Dispatch custom event for other components to listen
     window.dispatchEvent(
       new CustomEvent("savedMoviesChanged", {
         detail: personalData.savedMovies,
@@ -63,7 +62,6 @@ export function MovieCard({ movie, onDelete }) {
       JSON.stringify(personalData)
     );
     setUserRating(newRating);
-    // Dispatch custom event
     window.dispatchEvent(
       new CustomEvent("movieRatingsChanged", {
         detail: personalData.ratedMovies,
@@ -132,14 +130,91 @@ export function MovieCard({ movie, onDelete }) {
         </div>
 
         <div className="mb-3 space-y-1 text-sm text-gray-600 dark:text-gray-400">
-          {movie.rating > 0 && (
+          {movie.imdbRating > 0 && (
             <div className="flex items-center gap-1.5">
               <Star className="size-4 fill-yellow-400 stroke-yellow-400" />
-              <span>{movie.rating.toFixed(1)}/10</span>
+              <span className="font-medium">IMDb: {movie.imdbRating.toFixed(1)}/10</span>
+            </div>
+          )}
+          {movie.rating > 0 && movie.source === "TMDB" && (
+            <div className="flex items-center gap-1.5">
+              <Star className="size-4 fill-blue-400 stroke-blue-400" />
+              <span>TMDB: {movie.rating.toFixed(1)}/10</span>
             </div>
           )}
           {movie.genre && (
             <div className="line-clamp-1 text-xs">{movie.genre}</div>
+          )}
+          {movie.traktRating && (
+            <div className="flex items-center gap-1.5">
+              <Star className="size-4 fill-green-400 stroke-green-400" />
+              {movie.traktSlug ? (
+                <a
+                  href={`https://trakt.tv/movies/${movie.traktSlug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs hover:underline"
+                >
+                  Trakt: {movie.traktRating.toFixed(1)}/10
+                </a>
+              ) : (
+                <span className="text-xs">Trakt: {movie.traktRating.toFixed(1)}/10</span>
+              )}
+              {movie.traktVotes && (
+                <span className="text-xs text-gray-500">({(movie.traktVotes / 1000).toFixed(1)}K)</span>
+              )}
+            </div>
+          )}
+          {movie.traktWatchers && (
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+              <Users className="size-3" />
+              <span>{movie.traktWatchers} gledatelja</span>
+            </div>
+          )}
+          {movie.traktRuntime && (
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+              <Clock className="size-3" />
+              <span>{movie.traktRuntime} min</span>
+            </div>
+          )}
+          {movie.youtubeVideoId && (
+            <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 space-y-1">
+              <a
+                href={`https://www.youtube.com/watch?v=${movie.youtubeVideoId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-red-600 dark:text-red-400 hover:underline"
+              >
+                <Play className="size-4" />
+                <span className="text-xs font-medium">Pogledaj trailer</span>
+              </a>
+              {movie.youtubeViews > 0 && (
+                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 flex-wrap">
+                  <Eye className="size-3" />
+                  <span>
+                    {movie.youtubeViews >= 1000000
+                      ? `${(movie.youtubeViews / 1000000).toFixed(1)}M`
+                      : movie.youtubeViews >= 1000
+                      ? `${(movie.youtubeViews / 1000).toFixed(1)}K`
+                      : movie.youtubeViews}
+                    {' '}pregleda
+                  </span>
+                  {movie.youtubeLikes > 0 && (
+                    <>
+                      <ThumbsUp className="size-3 ml-2" />
+                      <span>
+                        {movie.youtubeLikes >= 1000000
+                          ? `${(movie.youtubeLikes / 1000000).toFixed(1)}M`
+                          : movie.youtubeLikes >= 1000
+                          ? `${(movie.youtubeLikes / 1000).toFixed(0)}K`
+                          : movie.youtubeLikes}
+                        {' '}lajkova
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </div>
 

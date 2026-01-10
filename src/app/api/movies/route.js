@@ -8,10 +8,14 @@ import {
   getMovieDetails,
 } from "@/lib/themoviedb";
 import {
-  getMovieByTitle,
-  mapOMDBToMovie,
-  getPopularMovieTitles,
+  getIMDBRating,
 } from "@/lib/omdb";
+import {
+  getTrailerInfo,
+} from "@/lib/youtube";
+import {
+  getTraktInfo,
+} from "@/lib/trakt";
 
 export async function GET(request) {
   try {
@@ -19,6 +23,29 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const action = searchParams.get("action");
+
+    if (action === "cron-fetch") {
+      const cronSecret = searchParams.get("secret");
+      const expectedSecret = process.env.CRON_SECRET || "your-secret-key-change-this";
+      
+      if (cronSecret !== expectedSecret) {
+        return NextResponse.json(
+          { success: false, message: "Unauthorized" },
+          { status: 401 }
+        );
+      }
+      
+      await Movie.deleteMany({});
+      
+      const requestBody = { action: "fetch-and-save" };
+      const postRequest = new Request(request.url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+      
+      return await POST(postRequest);
+    }
 
     if (action === "fetch") {
       let query = {};
@@ -95,58 +122,115 @@ export async function POST(request) {
     const { action } = await request.json();
 
     if (action === "fetch-and-save") {
+      await Movie.deleteMany({});
+      
       const savedMovies = [];
+      const stats = {
+        total: 0,
+        new: 0,
+        existing: 0,
+        withIMDB: 0,
+        withoutIMDB: 0,
+        withYouTube: 0,
+        withoutYouTube: 0,
+        withTrakt: 0,
+        withoutTrakt: 0,
+        errors: 0,
+      };
 
       const tmdbMovies = await getPopularMovies(1);
-      const selectedTMDB = tmdbMovies.slice(0, 10);
-
-      for (const tmdbMovie of selectedTMDB) {
-        try {
-          const existing = await Movie.findOne({
-            source: "TMDB",
-            sourceId: tmdbMovie.id.toString(),
-          });
-
-          if (!existing) {
-            const details = await getMovieDetails(tmdbMovie.id);
-            const genres =
-              details.genres?.map((g) => g.name).join(", ") || null;
-
-            const movieData = {
-              ...mapTMDBToMovie(tmdbMovie),
-              genre: genres,
-            };
-
-            const saved = await Movie.create(movieData);
-            savedMovies.push(saved);
-          } else {
-            savedMovies.push(existing);
-          }
-        } catch (error) {
-          console.error(`Error saving TMDB movie ${tmdbMovie.id}:`, error);
-        }
+      
+      let allMovies = [...tmdbMovies];
+      if (tmdbMovies.length < 50) {
+        const page2 = await getPopularMovies(2);
+        allMovies = [...allMovies, ...page2];
       }
+      if (allMovies.length < 50) {
+        const page3 = await getPopularMovies(3);
+        allMovies = [...allMovies, ...page3];
+      }
+      
+      const selectedTMDB = allMovies.slice(0, 50);
+      stats.total = selectedTMDB.length;
 
-      const popularTitles = getPopularMovieTitles();
-      const selectedTitles = popularTitles.slice(0, 10);
-
-      for (const title of selectedTitles) {
+      for (let i = 0; i < selectedTMDB.length; i++) {
+        const tmdbMovie = selectedTMDB[i];
+        
         try {
-          const omdbMovie = await getMovieByTitle(title);
-          const existing = await Movie.findOne({
-            source: "OMDB",
-            sourceId: omdbMovie.imdbID,
-          });
+          stats.new++;
+            
+          const details = await getMovieDetails(tmdbMovie.id);
+          const genres = details.genres?.map((g) => g.name).join(", ") || null;
 
-          if (!existing) {
-            const movieData = mapOMDBToMovie(omdbMovie);
-            const saved = await Movie.create(movieData);
-            savedMovies.push(saved);
+          const year = tmdbMovie.release_date 
+            ? new Date(tmdbMovie.release_date).getFullYear() 
+            : null;
+          
+          const imdbRating = await getIMDBRating(tmdbMovie.title, year);
+          
+          if (imdbRating) {
+            stats.withIMDB++;
           } else {
-            savedMovies.push(existing);
+            stats.withoutIMDB++;
           }
+          
+          await new Promise(resolve => setTimeout(resolve, 200));
+
+          const youtubeInfo = await getTrailerInfo(tmdbMovie.title);
+          
+          if (youtubeInfo && youtubeInfo.videoId) {
+            stats.withYouTube++;
+          } else {
+            stats.withoutYouTube++;
+          }
+          
+          await new Promise(resolve => setTimeout(resolve, 200));
+
+          const traktInfo = await getTraktInfo(tmdbMovie.title, year);
+          
+          if (traktInfo && traktInfo.traktId) {
+            stats.withTrakt++;
+          } else {
+            stats.withoutTrakt++;
+          }
+          
+          await new Promise(resolve => setTimeout(resolve, 200));
+
+          const movieData = {
+            ...mapTMDBToMovie(tmdbMovie),
+            genre: genres,
+            imdbRating: imdbRating,
+          };
+
+          if (youtubeInfo?.videoId) {
+            movieData.youtubeVideoId = youtubeInfo.videoId;
+            if (youtubeInfo.viewCount) movieData.youtubeViews = youtubeInfo.viewCount;
+            if (youtubeInfo.likeCount) movieData.youtubeLikes = youtubeInfo.likeCount;
+            if (youtubeInfo.title) movieData.youtubeTitle = youtubeInfo.title;
+            if (youtubeInfo.channelTitle) movieData.youtubeChannel = youtubeInfo.channelTitle;
+          }
+
+          if (traktInfo) {
+            if (traktInfo.traktId) movieData.traktId = traktInfo.traktId;
+            if (traktInfo.traktSlug) movieData.traktSlug = traktInfo.traktSlug;
+            if (traktInfo.traktRating) movieData.traktRating = traktInfo.traktRating;
+            if (traktInfo.traktVotes) movieData.traktVotes = traktInfo.traktVotes;
+            if (traktInfo.traktCertification) movieData.traktCertification = traktInfo.traktCertification;
+            if (traktInfo.traktTagline) movieData.traktTagline = traktInfo.traktTagline;
+            if (traktInfo.traktOverview) movieData.traktOverview = traktInfo.traktOverview;
+            if (traktInfo.traktReleased) movieData.traktReleased = traktInfo.traktReleased;
+            if (traktInfo.traktRuntime) movieData.traktRuntime = traktInfo.traktRuntime;
+            if (traktInfo.traktGenres) movieData.traktGenres = traktInfo.traktGenres;
+            if (traktInfo.traktWatchers) movieData.traktWatchers = traktInfo.traktWatchers;
+            if (traktInfo.traktPlays) movieData.traktPlays = traktInfo.traktPlays;
+            if (traktInfo.traktCollectors) movieData.traktCollectors = traktInfo.traktCollectors;
+          }
+
+          const saved = await Movie.create(movieData);
+          savedMovies.push(saved);
         } catch (error) {
-          console.error(`Error saving OMDB movie ${title}:`, error);
+          stats.errors++;
+          console.error(`Error saving movie "${tmdbMovie.title}":`, error);
         }
       }
 
@@ -154,6 +238,7 @@ export async function POST(request) {
         success: true,
         message: `Spremljeno ${savedMovies.length} filmova`,
         data: savedMovies,
+        stats: stats,
       });
     }
 

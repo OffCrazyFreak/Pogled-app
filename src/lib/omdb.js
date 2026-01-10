@@ -1,29 +1,6 @@
 const OMDB_API_KEY = process.env.OMDB_API_KEY;
 const OMDB_BASE_URL = 'https://www.omdbapi.com';
 
-const POPULAR_MOVIE_TITLES = [
-  'Inception',
-  'The Dark Knight',
-  'Interstellar',
-  'Pulp Fiction',
-  'The Matrix',
-  'Fight Club',
-  'Forrest Gump',
-  'The Shawshank Redemption',
-  'The Godfather',
-  'Titanic',
-  'Avatar',
-  'Jurassic Park',
-  'Star Wars',
-  'The Avengers',
-  'Iron Man',
-  'Spider-Man',
-  'Batman',
-  'Superman',
-  'Gladiator',
-  'Braveheart',
-];
-
 export async function getMovieByTitle(title, year = null) {
   try {
     let url = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`;
@@ -69,7 +46,23 @@ export function mapOMDBToMovie(omdbMovie) {
   };
 }
 
-export function getPopularMovieTitles() {
-  return POPULAR_MOVIE_TITLES;
+/**
+ * Dohvaća IMDb ocjenu za film iz OMDB API-ja
+ * @param {string} title - Naslov filma
+ * @param {number|null} year - Godina filma (opcionalno)
+ * @returns {Promise<number|null>} IMDb ocjena ili null ako nije pronađena
+ */
+export async function getIMDBRating(title, year = null) {
+  try {
+    const omdbMovie = await getMovieByTitle(title, year);
+    
+    if (omdbMovie.imdbRating && omdbMovie.imdbRating !== 'N/A') {
+      return parseFloat(omdbMovie.imdbRating);
+    }
+    
+    return null;
+  } catch (error) {
+    return null;
+  }
 }
 

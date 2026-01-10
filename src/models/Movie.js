@@ -15,8 +15,83 @@ const MovieSchema = new mongoose.Schema({
   rating: {
     type: Number,
   },
+  imdbRating: {
+    type: Number,
+  },
   genre: {
     type: String,
+  },
+  youtubeVideoId: {
+    type: String,
+    default: null,
+  },
+  youtubeViews: {
+    type: Number,
+    default: null,
+  },
+  youtubeLikes: {
+    type: Number,
+    default: null,
+  },
+  youtubeTitle: {
+    type: String,
+    default: null,
+  },
+  youtubeChannel: {
+    type: String,
+    default: null,
+  },
+  traktId: {
+    type: Number,
+    default: null,
+  },
+  traktSlug: {
+    type: String,
+    default: null,
+  },
+  traktRating: {
+    type: Number,
+    default: null,
+  },
+  traktVotes: {
+    type: Number,
+    default: null,
+  },
+  traktCertification: {
+    type: String,
+    default: null,
+  },
+  traktTagline: {
+    type: String,
+    default: null,
+  },
+  traktOverview: {
+    type: String,
+    default: null,
+  },
+  traktReleased: {
+    type: String,
+    default: null,
+  },
+  traktRuntime: {
+    type: Number,
+    default: null,
+  },
+  traktGenres: {
+    type: [String],
+    default: null,
+  },
+  traktWatchers: {
+    type: Number,
+    default: null,
+  },
+  traktPlays: {
+    type: Number,
+    default: null,
+  },
+  traktCollectors: {
+    type: Number,
+    default: null,
   },
   source: {
     type: String,
@@ -31,6 +106,8 @@ const MovieSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+}, {
+  strict: true,
 });
 
 MovieSchema.index({ source: 1, sourceId: 1 }, { unique: true });

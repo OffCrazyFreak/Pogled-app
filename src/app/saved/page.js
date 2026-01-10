@@ -15,7 +15,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { SearchIcon, FileTextIcon, HeartIcon } from "lucide-react";
+import { SearchIcon, FileTextIcon, HeartIcon, Download, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Favorites() {
   const { data: session, status } = useSession();
@@ -26,7 +27,7 @@ export default function Favorites() {
     value: searchParams.get("value") || "",
   });
   const [savedMovies, setSavedMovies] = useState([]);
-  const { movies, loading, fetchMovies, fetchAndSave, deleteMovie } =
+  const { movies, loading, fetchMovies, fetchAndSave, deleteMovie, deleteAll } =
     useMovies();
 
   useEffect(() => {
@@ -93,13 +94,38 @@ export default function Favorites() {
   return (
     <div>
       <div className="mb-6 space-y-4">
-        <FilterSection
-          filter={filter}
-          setFilter={setFilter}
-          onApplyFilter={applyFilter}
-          onClear={handleClear}
-          loading={loading}
-        />
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="flex-1">
+            <FilterSection
+              filter={filter}
+              setFilter={setFilter}
+              onApplyFilter={applyFilter}
+              onClear={handleClear}
+              loading={loading}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={fetchAndSave}
+              disabled={loading}
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              {loading ? "Učitavanje..." : "Dohvati filmove"}
+            </Button>
+            {movies.length > 0 && (
+              <Button
+                onClick={deleteAll}
+                disabled={loading}
+                variant="destructive"
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Obriši sve
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
 
       {loading && (
