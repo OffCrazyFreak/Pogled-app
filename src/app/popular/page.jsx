@@ -123,21 +123,22 @@ export default function Popular() {
             ))}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center justify-between w-full sm:w-auto flex-wrap sm:flex-nowrap">
             <Button
               onClick={fetchAndSave}
               disabled={loading}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 flex-1"
             >
               <Download className="h-4 w-4" />
               {loading ? "Učitavanje..." : "Dohvati filmove"}
             </Button>
+
             {movies.length > 0 && (
               <Button
                 onClick={deleteAll}
                 disabled={loading}
                 variant="destructive"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 flex-1"
               >
                 <Trash2 className="h-4 w-4" />
                 Obriši sve
