@@ -21,6 +21,9 @@ export function Rating({ rate, className, onChange, interactive = false }) {
             interactive && "cursor-pointer hover:scale-110 transition-transform"
           )}
           onClick={() => interactive && onChange && onChange(i + 1)}
+          aria-label={interactive ? `Ocijeni ${i + 1} zvjezdica` : undefined}
+          role={interactive ? "button" : undefined}
+          tabIndex={interactive ? 0 : undefined}
         />
       );
     }
@@ -34,6 +37,11 @@ export function Rating({ rate, className, onChange, interactive = false }) {
             interactive && "cursor-pointer hover:scale-110 transition-transform"
           )}
           onClick={() => interactive && onChange && onChange(fullStars + i + 1)}
+          aria-label={
+            interactive ? `Ocijeni ${fullStars + i + 1} zvjezdica` : undefined
+          }
+          role={interactive ? "button" : undefined}
+          tabIndex={interactive ? 0 : undefined}
         />
       );
     }
@@ -47,6 +55,8 @@ export function Rating({ rate, className, onChange, interactive = false }) {
         "flex items-center gap-1 [&_svg]:size-5 [&>div]:size-5",
         className
       )}
+      role={interactive ? "group" : undefined}
+      aria-label={interactive ? "Ocjenjivanje filma" : undefined}
     >
       {renderStars()}
     </div>

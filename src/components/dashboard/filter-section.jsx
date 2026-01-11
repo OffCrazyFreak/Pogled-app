@@ -33,10 +33,15 @@ export function FilterSection({
             <Select
               value={filter.type}
               onValueChange={(value) => setFilter({ ...filter, type: value })}
+              aria-labelledby="filter-type-label"
             >
-              <SelectTrigger className="w-full sm:w-auto sm:min-w-[160px]">
+              <SelectTrigger
+                id="filter-type"
+                className="w-full sm:w-auto sm:min-w-[160px]"
+              >
                 <SelectValue placeholder="Filtriraj po..." />
               </SelectTrigger>
+
               <SelectContent>
                 <SelectItem value="title">Naslov</SelectItem>
                 <SelectItem value="year">Godina (točna)</SelectItem>
@@ -46,8 +51,11 @@ export function FilterSection({
                 <SelectItem value="source">Izvor (TMDB/OMDB)</SelectItem>
               </SelectContent>
             </Select>
+
             <div className="relative flex-1 min-w-0">
               <Input
+                id="filter-value"
+                aria-labelledby="filter-value-label"
                 type="text"
                 value={filter.value}
                 onChange={(e) =>
@@ -57,6 +65,7 @@ export function FilterSection({
                 placeholder="Vrijednost..."
                 className="pr-8"
               />
+
               {filter.value && (
                 <Button
                   type="button"
@@ -64,12 +73,14 @@ export function FilterSection({
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={handleClear}
+                  aria-label="Očisti filter"
                 >
                   <X className="size-4" />
                 </Button>
               )}
             </div>
           </div>
+
           <Button
             onClick={onApplyFilter}
             disabled={!filter.type || !filter.value || loading}

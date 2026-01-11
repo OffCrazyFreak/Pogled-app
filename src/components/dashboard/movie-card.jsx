@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Heart, Star, Play, Eye, ThumbsUp, Users, Clock } from "lucide-react";
 import { Rating } from "@/components/shadcnblocks/rating";
 import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
 
 export function MovieCard({ movie, onDelete }) {
   const [isSaved, setIsSaved] = useState(false);
@@ -73,13 +75,16 @@ export function MovieCard({ movie, onDelete }) {
     <Card className="overflow-hidden">
       <div className="relative h-24 sm:h-56 w-full">
         {movie.poster ? (
-          <img
+          <Image
+            width={560}
+            height={840}
             src={movie.poster}
-            alt={movie.title}
-            className="h-full w-full object-cover"
+            alt={`Poster za ${movie.title}`}
+            loading="eager"
+            className="object-cover h-full w-full"
+            unoptimized
             onError={(e) => {
-              e.target.src =
-                "https://via.placeholder.com/500x750?text=No+Poster";
+              e.target.src = "https://placehold.co/500x750?text=No+Poster";
             }}
           />
         ) : (
@@ -103,9 +108,14 @@ export function MovieCard({ movie, onDelete }) {
             <CardTitle className="line-clamp-2 text-base">
               {movie.title}
             </CardTitle>
+
             <div className="text-sm text-gray-600 dark:text-gray-400">
               {movie.year}
             </div>
+
+            {movie.genre && (
+              <div className="line-clamp-1 text-xs">{movie.genre}</div>
+            )}
           </div>
 
           <div className="flex flex-col items-center gap-1">
@@ -114,6 +124,9 @@ export function MovieCard({ movie, onDelete }) {
               size="sm"
               className="p-1"
               onClick={toggleSave}
+              aria-label={
+                isSaved ? "Ukloni iz spremljenih" : "Dodaj u spremljene"
+              }
             >
               <Heart
                 className={`size-4 sm:size-6 ${
@@ -130,41 +143,82 @@ export function MovieCard({ movie, onDelete }) {
         </div>
 
         <div className="mb-3 space-y-1 text-sm text-gray-600 dark:text-gray-400">
-          {movie.imdbRating > 0 && (
-            <div className="flex items-center gap-1.5">
-              <Star className="size-4 fill-yellow-400 stroke-yellow-400" />
-              <span className="font-medium">IMDb: {movie.imdbRating.toFixed(1)}/10</span>
-            </div>
-          )}
-          {movie.rating > 0 && movie.source === "TMDB" && (
-            <div className="flex items-center gap-1.5">
-              <Star className="size-4 fill-blue-400 stroke-blue-400" />
-              <span>TMDB: {movie.rating.toFixed(1)}/10</span>
-            </div>
-          )}
-          {movie.genre && (
-            <div className="line-clamp-1 text-xs">{movie.genre}</div>
-          )}
-          {movie.traktRating && (
-            <div className="flex items-center gap-1.5">
-              <Star className="size-4 fill-green-400 stroke-green-400" />
-              {movie.traktSlug ? (
-                <a
-                  href={`https://trakt.tv/movies/${movie.traktSlug}`}
+          {/* Ratings */}
+          <div>
+            {movie.imdbRating > 0 && (
+              <div className="flex items-center gap-1.5">
+                <Star
+                  className="size-4 fill-yellow-400 stroke-yellow-400"
+                  aria-hidden="true"
+                />
+
+                {movie.imdbId ? (
+                  <Link
+                    href={`https://www.imdb.com/title/${movie.imdbId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium hover:underline"
+                  >
+                    IMDb: {movie.imdbRating.toFixed(1)} / 10
+                  </Link>
+                ) : (
+                  <span className="font-medium">
+                    IMDb: {movie.imdbRating.toFixed(1)} / 10
+                  </span>
+                )}
+              </div>
+            )}
+            {movie.rating > 0 && movie.source === "TMDB" && (
+              <div className="flex items-center gap-1.5">
+                <Star
+                  className="size-4 fill-blue-400 stroke-blue-400"
+                  aria-hidden="true"
+                />
+                <Link
+                  href={`https://www.themoviedb.org/movie/${movie.sourceId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs hover:underline"
+                  className="hover:underline"
                 >
-                  Trakt: {movie.traktRating.toFixed(1)}/10
-                </a>
-              ) : (
-                <span className="text-xs">Trakt: {movie.traktRating.toFixed(1)}/10</span>
-              )}
-              {movie.traktVotes && (
-                <span className="text-xs text-gray-500">({(movie.traktVotes / 1000).toFixed(1)}K)</span>
-              )}
-            </div>
-          )}
+                  TMDB: {movie.rating.toFixed(1)} / 10
+                </Link>
+              </div>
+            )}
+            {movie.traktRating && (
+              <div className="flex items-center gap-1.5">
+                <Star
+                  className="size-4 fill-green-400 stroke-green-400"
+                  aria-hidden="true"
+                />
+
+                {movie.traktSlug ? (
+                  <Link
+                    href={`https://trakt.tv/movies/${movie.traktSlug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline"
+                  >
+                    Trakt: {movie.traktRating.toFixed(1)} / 10
+                  </Link>
+                ) : (
+                  <span className="text-xs">
+                    Trakt: {movie.traktRating.toFixed(1)} / 10
+                  </span>
+                )}
+
+                {movie.traktVotes && (
+                  <span className="text-xs text-gray-500">
+                    (
+                    {movie.traktVotes > 1000
+                      ? `${(movie.traktVotes / 1000).toFixed(1)}K`
+                      : movie.traktVotes}
+                    )
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
           {movie.traktWatchers && (
             <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
               <Users className="size-3" />
@@ -179,7 +233,7 @@ export function MovieCard({ movie, onDelete }) {
           )}
           {movie.youtubeVideoId && (
             <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 space-y-1">
-              <a
+              <Link
                 href={`https://www.youtube.com/watch?v=${movie.youtubeVideoId}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -187,7 +241,7 @@ export function MovieCard({ movie, onDelete }) {
               >
                 <Play className="size-4" />
                 <span className="text-xs font-medium">Pogledaj trailer</span>
-              </a>
+              </Link>
               {movie.youtubeViews > 0 && (
                 <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 flex-wrap">
                   <Eye className="size-3" />
@@ -196,8 +250,8 @@ export function MovieCard({ movie, onDelete }) {
                       ? `${(movie.youtubeViews / 1000000).toFixed(1)}M`
                       : movie.youtubeViews >= 1000
                       ? `${(movie.youtubeViews / 1000).toFixed(1)}K`
-                      : movie.youtubeViews}
-                    {' '}pregleda
+                      : movie.youtubeViews}{" "}
+                    pregleda
                   </span>
                   {movie.youtubeLikes > 0 && (
                     <>
@@ -207,8 +261,8 @@ export function MovieCard({ movie, onDelete }) {
                           ? `${(movie.youtubeLikes / 1000000).toFixed(1)}M`
                           : movie.youtubeLikes >= 1000
                           ? `${(movie.youtubeLikes / 1000).toFixed(0)}K`
-                          : movie.youtubeLikes}
-                        {' '}lajkova
+                          : movie.youtubeLikes}{" "}
+                        lajkova
                       </span>
                     </>
                   )}

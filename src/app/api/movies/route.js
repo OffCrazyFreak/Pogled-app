@@ -7,15 +7,9 @@ import {
   mapTMDBToMovie,
   getMovieDetails,
 } from "@/lib/themoviedb";
-import {
-  getIMDBRating,
-} from "@/lib/omdb";
-import {
-  getTrailerInfo,
-} from "@/lib/youtube";
-import {
-  getTraktInfo,
-} from "@/lib/trakt";
+import { getIMDBRating } from "@/lib/omdb";
+import { getTrailerInfo } from "@/lib/youtube";
+import { getTraktInfo } from "@/lib/trakt";
 
 export async function GET(request) {
   try {
@@ -27,24 +21,25 @@ export async function GET(request) {
     if (action === "cron-fetch") {
       const isVercelCron = request.headers.get("x-vercel-cron");
       const cronSecret = searchParams.get("secret");
-      const expectedSecret = process.env.CRON_SECRET || "your-secret-key-change-this";
-      
+      const expectedSecret =
+        process.env.CRON_SECRET || "your-secret-key-change-this";
+
       if (!isVercelCron && cronSecret !== expectedSecret) {
         return NextResponse.json(
           { success: false, message: "Unauthorized" },
           { status: 401 }
         );
       }
-      
+
       await Movie.deleteMany({});
-      
+
       const requestBody = { action: "fetch-and-save" };
       const postRequest = new Request(request.url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
-      
+
       return await POST(postRequest);
     }
 
@@ -124,7 +119,7 @@ export async function POST(request) {
 
     if (action === "fetch-and-save") {
       await Movie.deleteMany({});
-      
+
       const savedMovies = [];
       const stats = {
         total: 0,
@@ -140,7 +135,7 @@ export async function POST(request) {
       };
 
       const tmdbMovies = await getPopularMovies(1);
-      
+
       let allMovies = [...tmdbMovies];
       if (tmdbMovies.length < 50) {
         const page2 = await getPopularMovies(2);
@@ -150,52 +145,52 @@ export async function POST(request) {
         const page3 = await getPopularMovies(3);
         allMovies = [...allMovies, ...page3];
       }
-      
+
       const selectedTMDB = allMovies.slice(0, 50);
       stats.total = selectedTMDB.length;
 
       for (let i = 0; i < selectedTMDB.length; i++) {
         const tmdbMovie = selectedTMDB[i];
-        
+
         try {
           stats.new++;
-            
+
           const details = await getMovieDetails(tmdbMovie.id);
           const genres = details.genres?.map((g) => g.name).join(", ") || null;
 
-          const year = tmdbMovie.release_date 
-            ? new Date(tmdbMovie.release_date).getFullYear() 
+          const year = tmdbMovie.release_date
+            ? new Date(tmdbMovie.release_date).getFullYear()
             : null;
-          
+
           const imdbRating = await getIMDBRating(tmdbMovie.title, year);
-          
+
           if (imdbRating) {
             stats.withIMDB++;
           } else {
             stats.withoutIMDB++;
           }
-          
-          await new Promise(resolve => setTimeout(resolve, 200));
+
+          await new Promise((resolve) => setTimeout(resolve, 200));
 
           const youtubeInfo = await getTrailerInfo(tmdbMovie.title);
-          
+
           if (youtubeInfo && youtubeInfo.videoId) {
             stats.withYouTube++;
           } else {
             stats.withoutYouTube++;
           }
-          
-          await new Promise(resolve => setTimeout(resolve, 200));
+
+          await new Promise((resolve) => setTimeout(resolve, 200));
 
           const traktInfo = await getTraktInfo(tmdbMovie.title, year);
-          
+
           if (traktInfo && traktInfo.traktId) {
             stats.withTrakt++;
           } else {
             stats.withoutTrakt++;
           }
-          
-          await new Promise(resolve => setTimeout(resolve, 200));
+
+          await new Promise((resolve) => setTimeout(resolve, 200));
 
           const movieData = {
             ...mapTMDBToMovie(tmdbMovie),
@@ -205,26 +200,40 @@ export async function POST(request) {
 
           if (youtubeInfo?.videoId) {
             movieData.youtubeVideoId = youtubeInfo.videoId;
-            if (youtubeInfo.viewCount) movieData.youtubeViews = youtubeInfo.viewCount;
-            if (youtubeInfo.likeCount) movieData.youtubeLikes = youtubeInfo.likeCount;
+            if (youtubeInfo.viewCount)
+              movieData.youtubeViews = youtubeInfo.viewCount;
+            if (youtubeInfo.likeCount)
+              movieData.youtubeLikes = youtubeInfo.likeCount;
             if (youtubeInfo.title) movieData.youtubeTitle = youtubeInfo.title;
-            if (youtubeInfo.channelTitle) movieData.youtubeChannel = youtubeInfo.channelTitle;
+            if (youtubeInfo.channelTitle)
+              movieData.youtubeChannel = youtubeInfo.channelTitle;
           }
 
           if (traktInfo) {
             if (traktInfo.traktId) movieData.traktId = traktInfo.traktId;
             if (traktInfo.traktSlug) movieData.traktSlug = traktInfo.traktSlug;
-            if (traktInfo.traktRating) movieData.traktRating = traktInfo.traktRating;
-            if (traktInfo.traktVotes) movieData.traktVotes = traktInfo.traktVotes;
-            if (traktInfo.traktCertification) movieData.traktCertification = traktInfo.traktCertification;
-            if (traktInfo.traktTagline) movieData.traktTagline = traktInfo.traktTagline;
-            if (traktInfo.traktOverview) movieData.traktOverview = traktInfo.traktOverview;
-            if (traktInfo.traktReleased) movieData.traktReleased = traktInfo.traktReleased;
-            if (traktInfo.traktRuntime) movieData.traktRuntime = traktInfo.traktRuntime;
-            if (traktInfo.traktGenres) movieData.traktGenres = traktInfo.traktGenres;
-            if (traktInfo.traktWatchers) movieData.traktWatchers = traktInfo.traktWatchers;
-            if (traktInfo.traktPlays) movieData.traktPlays = traktInfo.traktPlays;
-            if (traktInfo.traktCollectors) movieData.traktCollectors = traktInfo.traktCollectors;
+            if (traktInfo.traktRating)
+              movieData.traktRating = traktInfo.traktRating;
+            if (traktInfo.traktVotes)
+              movieData.traktVotes = traktInfo.traktVotes;
+            if (traktInfo.traktCertification)
+              movieData.traktCertification = traktInfo.traktCertification;
+            if (traktInfo.traktTagline)
+              movieData.traktTagline = traktInfo.traktTagline;
+            if (traktInfo.traktOverview)
+              movieData.traktOverview = traktInfo.traktOverview;
+            if (traktInfo.traktReleased)
+              movieData.traktReleased = traktInfo.traktReleased;
+            if (traktInfo.traktRuntime)
+              movieData.traktRuntime = traktInfo.traktRuntime;
+            if (traktInfo.traktGenres)
+              movieData.traktGenres = traktInfo.traktGenres;
+            if (traktInfo.traktWatchers)
+              movieData.traktWatchers = traktInfo.traktWatchers;
+            if (traktInfo.traktPlays)
+              movieData.traktPlays = traktInfo.traktPlays;
+            if (traktInfo.traktCollectors)
+              movieData.traktCollectors = traktInfo.traktCollectors;
           }
 
           const saved = await Movie.create(movieData);

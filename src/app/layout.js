@@ -27,13 +27,22 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-500 text-white p-2 z-50"
+        >
+          Preskoči na glavni sadržaj
+        </a>
         <Providers>
           <AppSidebar />
 
           <SidebarInset>
             <Navbar />
 
-            <main className="mx-auto max-w-7xl p-2 sm:p-6 w-full">
+            <main
+              id="main-content"
+              className="mx-auto max-w-7xl p-2 sm:p-6 w-full"
+            >
               {children}
             </main>
           </SidebarInset>

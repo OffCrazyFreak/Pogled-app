@@ -28,6 +28,7 @@ export default function Explore() {
   });
   const { movies, loading, fetchMovies, fetchAndSave, deleteMovie, deleteAll } =
     useMovies();
+  const [announcement, setAnnouncement] = useState("");
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -40,6 +41,12 @@ export default function Explore() {
       }
     }
   }, [status, searchParams]);
+
+  useEffect(() => {
+    if (!loading && movies.length > 0) {
+      setAnnouncement(`Učitano ${movies.length} filmova`);
+    }
+  }, [movies, loading]);
 
   const applyFilter = () => {
     const params = new URLSearchParams();
@@ -61,6 +68,10 @@ export default function Explore() {
 
   return (
     <div>
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {announcement}
+      </div>
+
       <div className="mb-6 space-y-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="flex-1">

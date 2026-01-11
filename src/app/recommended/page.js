@@ -36,6 +36,7 @@ export default function Recommended() {
   const [movieRatings, setMovieRatings] = useState({});
   const { movies, loading, fetchMovies, fetchAndSave, deleteMovie, deleteAll } =
     useMovies();
+  const [announcement, setAnnouncement] = useState("");
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -79,6 +80,12 @@ export default function Recommended() {
     };
   }, [status, searchParams]);
 
+  useEffect(() => {
+    if (!loading && recommendedMovies.length > 0) {
+      setAnnouncement(`Učitano ${recommendedMovies.length} filmova`);
+    }
+  }, [recommendedMovies, loading]);
+
   const applyFilter = () => {
     const params = new URLSearchParams();
     if (filter.type && filter.value) {
@@ -104,6 +111,10 @@ export default function Recommended() {
 
   return (
     <div>
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {announcement}
+      </div>
+
       <div className="mb-6 space-y-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="flex-1">

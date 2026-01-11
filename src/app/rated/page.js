@@ -15,7 +15,13 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { SearchIcon, FileTextIcon, StarIcon, Download, Trash2 } from "lucide-react";
+import {
+  SearchIcon,
+  FileTextIcon,
+  StarIcon,
+  Download,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Watched() {
@@ -29,6 +35,7 @@ export default function Watched() {
   const [movieRatings, setMovieRatings] = useState({});
   const { movies, loading, fetchMovies, fetchAndSave, deleteMovie, deleteAll } =
     useMovies();
+  const [announcement, setAnnouncement] = useState("");
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -72,6 +79,12 @@ export default function Watched() {
     };
   }, [status, searchParams]);
 
+  useEffect(() => {
+    if (!loading && ratedMoviesList.length > 0) {
+      setAnnouncement(`Učitano ${ratedMoviesList.length} filmova`);
+    }
+  }, [ratedMoviesList, loading]);
+
   const applyFilter = () => {
     const params = new URLSearchParams();
     if (filter.type && filter.value) {
@@ -104,6 +117,10 @@ export default function Watched() {
 
   return (
     <div>
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {announcement}
+      </div>
+
       <div className="mb-6 space-y-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="flex-1">

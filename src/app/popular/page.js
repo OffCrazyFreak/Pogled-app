@@ -33,13 +33,21 @@ export default function Popular() {
   const [timeRange, setTimeRange] = useState(
     searchParams.get("range") || "all"
   );
-  const { movies, loading, fetchMovies, fetchAndSave, deleteMovie, deleteAll } = useMovies();
+  const { movies, loading, fetchMovies, fetchAndSave, deleteMovie, deleteAll } =
+    useMovies();
+  const [announcement, setAnnouncement] = useState("");
 
   useEffect(() => {
     if (status === "authenticated") {
       fetchMovies();
     }
   }, [status]);
+
+  useEffect(() => {
+    if (!loading && movies.length > 0) {
+      setAnnouncement(`Učitano ${movies.length} filmova`);
+    }
+  }, [movies, loading]);
 
   useEffect(() => {
     // Update URL when time range changes
@@ -84,13 +92,19 @@ export default function Popular() {
 
   return (
     <div>
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {announcement}
+      </div>
+
       <div className="mb-4 space-y-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           {/* Time Range Tabs */}
-          <div className="flex flex-wrap gap-2">
+          <div role="tablist" className="flex flex-wrap gap-2">
             {TIME_RANGES.map((range) => (
               <Button
                 key={range.key}
+                role="tab"
+                aria-selected={timeRange === range.key}
                 variant={timeRange === range.key ? "default" : "outline"}
                 size="sm"
                 onClick={() => handleTimeRangeChange(range.key)}
