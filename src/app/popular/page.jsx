@@ -97,9 +97,9 @@ export default function Popular() {
       </div>
 
       <div className="mb-4 space-y-4">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between overflow-hidden">
           {/* Time Range Tabs */}
-          <div role="tablist" className="flex flex-wrap gap-2">
+          <div role="tablist" className="flex gap-2 overflow-x-auto">
             {TIME_RANGES.map((range) => (
               <Button
                 key={range.key}

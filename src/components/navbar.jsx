@@ -1,6 +1,7 @@
 "use client";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import { AccessibilityWidget } from "@/components/accessibility-widget";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
@@ -43,6 +44,7 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
+          <AccessibilityWidget />
           <ThemeToggle />
 
           <NavUserNavbar />

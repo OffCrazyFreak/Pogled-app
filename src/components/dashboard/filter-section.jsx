@@ -26,8 +26,8 @@ export function FilterSection({
     }
   };
   return (
-    <Card>
-      <CardContent className="p-4">
+    <Card className="w-full">
+      <CardContent className="p-4 w-full">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex flex-col sm:flex-row gap-2 flex-1">
             <Select

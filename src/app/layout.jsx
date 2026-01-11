@@ -24,6 +24,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="hr" suppressHydrationWarning>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/opendyslexic.css"
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

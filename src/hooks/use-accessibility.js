@@ -8,6 +8,8 @@ const ACCESSIBILITY_STORAGE_KEY = "DRUMRE_projekt";
 
 const defaultSettings = {
   theme: "dark",
+  dyslexiaMode: false,
+  underlineLinks: false,
 };
 
 export function AccessibilityProvider({ children }) {
@@ -48,11 +50,33 @@ export function AccessibilityProvider({ children }) {
           ACCESSIBILITY_STORAGE_KEY,
           JSON.stringify(settings)
         );
+
+        // Apply accessibility styles
+        applyDyslexiaMode(settings.dyslexiaMode);
+        applyUnderlineLinks(settings.underlineLinks);
       } catch (error) {
         console.warn("Failed to save accessibility settings:", error);
       }
     }
   }, [settings, mounted]);
+
+  const applyDyslexiaMode = (enabled) => {
+    const body = document.body;
+    if (enabled) {
+      body.classList.add("dyslexia-mode");
+    } else {
+      body.classList.remove("dyslexia-mode");
+    }
+  };
+
+  const applyUnderlineLinks = (enabled) => {
+    const body = document.body;
+    if (enabled) {
+      body.classList.add("underline-links");
+    } else {
+      body.classList.remove("underline-links");
+    }
+  };
 
   const updateSetting = (key, value) => {
     setSettings((prev) => ({

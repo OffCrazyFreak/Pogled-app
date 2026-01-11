@@ -18,13 +18,13 @@ import {
 import {
   SearchIcon,
   FileTextIcon,
-  StarIcon,
+  SparklesIcon,
   Download,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function Watched() {
+export default function Recommended() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -32,6 +32,7 @@ export default function Watched() {
     type: searchParams.get("type") || "",
     value: searchParams.get("value") || "",
   });
+  const [savedMovies, setSavedMovies] = useState({});
   const [movieRatings, setMovieRatings] = useState({});
   const { movies, loading, fetchMovies, fetchAndSave, deleteMovie, deleteAll } =
     useMovies();
@@ -47,31 +48,31 @@ export default function Watched() {
         fetchMovies();
       }
     }
-    // Load movie ratings from localStorage
+
+    // Get saved and rated movies to exclude from recommendations
     const personalData = JSON.parse(
       localStorage.getItem("DRUMREtempMoviesPersonalData") ||
         '{"ratedMovies":{},"savedMovies":{}}'
     );
+    setSavedMovies(personalData.savedMovies);
     setMovieRatings(personalData.ratedMovies);
 
-    // Listen for storage changes
-    const handleStorageChange = () => {
-      const personalData = JSON.parse(
-        localStorage.getItem("DRUMREtempMoviesPersonalData") ||
-          '{"ratedMovies":{},"savedMovies":{}}'
-      );
-      setMovieRatings(personalData.ratedMovies);
+    // Listen for custom events
+    const handleSavedMoviesChanged = (event) => {
+      setSavedMovies(event.detail);
     };
-
-    // Listen for custom event
     const handleMovieRatingsChanged = (event) => {
       setMovieRatings(event.detail);
     };
 
-    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("savedMoviesChanged", handleSavedMoviesChanged);
     window.addEventListener("movieRatingsChanged", handleMovieRatingsChanged);
+
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener(
+        "savedMoviesChanged",
+        handleSavedMoviesChanged
+      );
       window.removeEventListener(
         "movieRatingsChanged",
         handleMovieRatingsChanged
@@ -80,14 +81,13 @@ export default function Watched() {
   }, [status, searchParams]);
 
   useEffect(() => {
-    const ratedMoviesList = movies.filter(
-      (movie) =>
-        movieRatings[movie._id]?.rate && movieRatings[movie._id].rate > 0
+    const recommendedMovies = movies.filter(
+      (movie) => !savedMovies[movie._id] && !movieRatings[movie._id]?.rate
     );
-    if (!loading && ratedMoviesList.length > 0) {
-      setAnnouncement(`Učitano ${ratedMoviesList.length} filmova`);
+    if (!loading && recommendedMovies.length > 0) {
+      setAnnouncement(`Učitano ${recommendedMovies.length} filmova`);
     }
-  }, [movieRatings, movies, loading]);
+  }, [savedMovies, movieRatings, movies, loading]);
 
   const applyFilter = () => {
     const params = new URLSearchParams();
@@ -107,17 +107,10 @@ export default function Watched() {
     router.push("?");
   };
 
-  const ratedMoviesList = movies.filter(
-    (movie) => movieRatings[movie._id]?.rate && movieRatings[movie._id].rate > 0
+  // Filter out movies that are already saved or rated
+  const recommendedMovies = movies.filter(
+    (movie) => !savedMovies[movie._id] && !movieRatings[movie._id]?.rate
   );
-
-  if (status === "loading") {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-        <Spinner className="h-8 w-8" />
-      </div>
-    );
-  }
 
   return (
     <div>
@@ -127,30 +120,30 @@ export default function Watched() {
 
       <div className="mb-6 space-y-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="flex-1">
-            <FilterSection
-              filter={filter}
-              setFilter={setFilter}
-              onApplyFilter={applyFilter}
-              onClear={handleClear}
-              loading={loading}
-            />
-          </div>
-          <div className="flex gap-2">
+          <FilterSection
+            filter={filter}
+            setFilter={setFilter}
+            onApplyFilter={applyFilter}
+            onClear={handleClear}
+            loading={loading}
+          />
+
+          <div className="flex gap-2 items-center justify-between w-full sm:w-auto flex-wrap sm:flex-nowrap">
             <Button
               onClick={fetchAndSave}
               disabled={loading}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 flex-1"
             >
               <Download className="h-4 w-4" />
               {loading ? "Učitavanje..." : "Dohvati filmove"}
             </Button>
+
             {movies.length > 0 && (
               <Button
                 onClick={deleteAll}
                 disabled={loading}
                 variant="destructive"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 flex-1"
               >
                 <Trash2 className="h-4 w-4" />
                 Obriši sve
@@ -175,31 +168,31 @@ export default function Watched() {
           {filter.type && filter.value && (
             <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-2 dark:border-blue-800 dark:bg-blue-900/20">
               <p className="text-sm text-blue-900 dark:text-blue-300">
-                {ratedMoviesList.length === 0
+                {recommendedMovies.length === 0
                   ? "Nema rezultata za odabrani filter."
-                  : `Pronađeno ${ratedMoviesList.length} ${
-                      ratedMoviesList.length === 1 ? "rezultat" : "rezultata"
+                  : `Pronađeno ${recommendedMovies.length} ${
+                      recommendedMovies.length === 1 ? "rezultat" : "rezultata"
                     }`}
               </p>
             </div>
           )}
-          {ratedMoviesList.length === 0 ? (
+          {recommendedMovies.length === 0 ? (
             <Empty className="w-fit mx-auto border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 p-8 rounded-md">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <StarIcon className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+                  <SparklesIcon className="h-12 w-12 text-gray-400 dark:text-gray-500" />
                 </EmptyMedia>
                 <EmptyTitle className="text-base font-medium text-gray-900 dark:text-white">
-                  Nema ocijenjenih filmova
+                  Nema preporučenih filmova
                 </EmptyTitle>
                 <EmptyDescription className="text-sm text-gray-500 dark:text-gray-400">
-                  Kliknite na zvjezdice da ocijenite filmove
+                  Svi filmovi su već spremljeni ili ocijenjeni
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {ratedMoviesList.map((movie) => (
+              {recommendedMovies.map((movie) => (
                 <MovieCard
                   key={movie._id}
                   movie={movie}

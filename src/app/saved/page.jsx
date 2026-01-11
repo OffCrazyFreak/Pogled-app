@@ -15,10 +15,16 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { SearchIcon, FileTextIcon, Download, Trash2 } from "lucide-react";
+import {
+  SearchIcon,
+  FileTextIcon,
+  HeartIcon,
+  Download,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function Explore() {
+export default function Favorites() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -26,6 +32,7 @@ export default function Explore() {
     type: searchParams.get("type") || "",
     value: searchParams.get("value") || "",
   });
+  const [savedMovies, setSavedMovies] = useState([]);
   const { movies, loading, fetchMovies, fetchAndSave, deleteMovie, deleteAll } =
     useMovies();
   const [announcement, setAnnouncement] = useState("");
@@ -40,13 +47,43 @@ export default function Explore() {
         fetchMovies();
       }
     }
+    // Load saved movies from localStorage
+    const personalData = JSON.parse(
+      localStorage.getItem("DRUMREtempMoviesPersonalData") ||
+        '{"ratedMovies":{},"savedMovies":{}}'
+    );
+    setSavedMovies(personalData.savedMovies);
+
+    // Listen for storage changes
+    const handleStorageChange = () => {
+      const personalData = JSON.parse(
+        localStorage.getItem("DRUMREtempMoviesPersonalData") ||
+          '{"ratedMovies":{},"savedMovies":{}}'
+      );
+      setSavedMovies(personalData.savedMovies);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    // Listen for custom event
+    const handleSavedMoviesChanged = (event) => {
+      setSavedMovies(event.detail);
+    };
+    window.addEventListener("savedMoviesChanged", handleSavedMoviesChanged);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener(
+        "savedMoviesChanged",
+        handleSavedMoviesChanged
+      );
+    };
   }, [status, searchParams]);
 
   useEffect(() => {
-    if (!loading && movies.length > 0) {
-      setAnnouncement(`Učitano ${movies.length} filmova`);
+    const savedMoviesList = movies.filter((movie) => savedMovies[movie._id]);
+    if (!loading && savedMoviesList.length > 0) {
+      setAnnouncement(`Učitano ${savedMoviesList.length} filmova`);
     }
-  }, [movies, loading]);
+  }, [savedMovies, movies, loading]);
 
   const applyFilter = () => {
     const params = new URLSearchParams();
@@ -66,6 +103,8 @@ export default function Explore() {
     router.push("?");
   };
 
+  const savedMoviesList = movies.filter((movie) => savedMovies[movie._id]);
+
   return (
     <div>
       <div aria-live="polite" aria-atomic="true" className="sr-only">
@@ -74,30 +113,30 @@ export default function Explore() {
 
       <div className="mb-6 space-y-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="flex-1">
-            <FilterSection
-              filter={filter}
-              setFilter={setFilter}
-              onApplyFilter={applyFilter}
-              onClear={handleClear}
-              loading={loading}
-            />
-          </div>
-          <div className="flex gap-2">
+          <FilterSection
+            filter={filter}
+            setFilter={setFilter}
+            onApplyFilter={applyFilter}
+            onClear={handleClear}
+            loading={loading}
+          />
+
+          <div className="flex gap-2 items-center justify-between w-full sm:w-auto flex-wrap sm:flex-nowrap">
             <Button
               onClick={fetchAndSave}
               disabled={loading}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 flex-1"
             >
               <Download className="h-4 w-4" />
               {loading ? "Učitavanje..." : "Dohvati filmove"}
             </Button>
+
             {movies.length > 0 && (
               <Button
                 onClick={deleteAll}
                 disabled={loading}
                 variant="destructive"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 flex-1"
               >
                 <Trash2 className="h-4 w-4" />
                 Obriši sve
@@ -122,32 +161,31 @@ export default function Explore() {
           {filter.type && filter.value && (
             <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-2 dark:border-blue-800 dark:bg-blue-900/20">
               <p className="text-sm text-blue-900 dark:text-blue-300">
-                {movies.length === 0
+                {savedMoviesList.length === 0
                   ? "Nema rezultata za odabrani filter."
-                  : `Pronađeno ${movies.length} ${
-                      movies.length === 1 ? "rezultat" : "rezultata"
+                  : `Pronađeno ${savedMoviesList.length} ${
+                      savedMoviesList.length === 1 ? "rezultat" : "rezultata"
                     }`}
               </p>
             </div>
           )}
-          {movies.length === 0 &&
-          (!filter.value || filter.value.length === 0) ? (
+          {savedMoviesList.length === 0 ? (
             <Empty className="w-fit mx-auto border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 p-8 rounded-md">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <FileTextIcon className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+                  <HeartIcon className="h-12 w-12 text-gray-400 dark:text-gray-500" />
                 </EmptyMedia>
                 <EmptyTitle className="text-base font-medium text-gray-900 dark:text-white">
-                  Nema filmova u bazi
+                  Nema spremljenih filmova
                 </EmptyTitle>
                 <EmptyDescription className="text-sm text-gray-500 dark:text-gray-400">
-                  Kliknite "Dohvati filmove" za početak
+                  Kliknite na srce da spremite filmove
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {movies.map((movie) => (
+              {savedMoviesList.map((movie) => (
                 <MovieCard
                   key={movie._id}
                   movie={movie}
