@@ -27,7 +27,7 @@ export function AccessibilityWidget() {
         <Button
           variant="ghost"
           size="sm"
-          className="h-9 w-9 p-0"
+          className="size-9 p-0"
           aria-label="Pristupačnost - opcije za osobe s disleksijom"
         >
           <PersonStanding className="size-5" />
@@ -40,14 +40,14 @@ export function AccessibilityWidget() {
           className="flex items-center justify-between"
         >
           <span>Disleksija</span>
-          {settings.dyslexiaMode && <Check className="h-4 w-4" />}
+          {settings.dyslexiaMode && <Check className="size-4" />}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={toggleUnderlineLinks}
           className="flex items-center justify-between"
         >
           <span>Podcrtaj linkove</span>
-          {settings.underlineLinks && <Check className="h-4 w-4" />}
+          {settings.underlineLinks && <Check className="size-4" />}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -14,7 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export function FilterSection({ fetchMovies, onFilterApplied, loading }) {
+export function MovieFilter({ fetchMovies, onFilterApplied, loading }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filter, setFilter] = useState({

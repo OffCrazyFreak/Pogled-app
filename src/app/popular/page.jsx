@@ -82,7 +82,7 @@ export default function Popular() {
               disabled={loading}
               className="flex items-center gap-2 flex-1"
             >
-              <Download className="h-4 w-4" />
+              <Download className="size-4" />
               {loading ? "Učitavanje..." : "Dohvati filmove"}
             </Button>
 
@@ -93,7 +93,7 @@ export default function Popular() {
                 variant="destructive"
                 className="flex items-center gap-2 flex-1"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="size-4" />
                 Obriši sve
               </Button>
             )}
@@ -105,7 +105,7 @@ export default function Popular() {
         <div className="flex min-h-[400px] items-center justify-center">
           <div className="text-center">
             <div className="mb-4">
-              <Spinner className="h-8 w-8" />
+              <Spinner className="size-8" />
             </div>
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState, Suspense } from "react";
-import { FilterSection } from "@/components/filter-section";
+import { MovieFilter } from "@/components/movie-filter";
 import { MovieCard } from "@/components/movie-card";
 import { useMovies } from "@/hooks/use-movies";
 import { Spinner } from "@/components/ui/spinner";
@@ -86,7 +86,7 @@ export default function Recommended() {
       <div className="mb-6 space-y-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <Suspense fallback={null}>
-            <FilterSection
+            <MovieFilter
               fetchMovies={fetchMovies}
               onFilterApplied={setCurrentFilter}
               loading={loading}
@@ -99,7 +99,7 @@ export default function Recommended() {
               disabled={loading}
               className="flex items-center gap-2 flex-1"
             >
-              <Download className="h-4 w-4" />
+              <Download className="size-4" />
               {loading ? "Učitavanje..." : "Dohvati filmove"}
             </Button>
 
@@ -110,7 +110,7 @@ export default function Recommended() {
                 variant="destructive"
                 className="flex items-center gap-2 flex-1"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="size-4" />
                 Obriši sve
               </Button>
             )}
@@ -122,7 +122,7 @@ export default function Recommended() {
         <div className="flex min-h-[400px] items-center justify-center">
           <div className="text-center">
             <div className="mb-4">
-              <Spinner className="h-8 w-8" />
+              <Spinner className="size-8" />
             </div>
           </div>
         </div>
