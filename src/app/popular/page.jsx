@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { MovieCard } from "@/components/movie-card";
 import { useMovies } from "@/hooks/use-movies";
 import { Spinner } from "@/components/ui/spinner";
@@ -27,6 +27,14 @@ const TIME_RANGES = [
 ];
 
 export default function Popular() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PopularContent />
+    </Suspense>
+  );
+}
+
+function PopularContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();

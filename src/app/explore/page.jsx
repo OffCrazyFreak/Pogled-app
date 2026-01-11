@@ -1,8 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { FilterSection } from "@/components/filter-section";
 import { MovieCard } from "@/components/movie-card";
 import { useMovies } from "@/hooks/use-movies";
@@ -19,52 +18,16 @@ import { SearchIcon, FileTextIcon, Download, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Explore() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [filter, setFilter] = useState({
-    type: searchParams.get("type") || "",
-    value: searchParams.get("value") || "",
-  });
+  const [currentFilter, setCurrentFilter] = useState({ type: "", value: "" });
   const { movies, loading, fetchMovies, fetchAndSave, deleteMovie, deleteAll } =
     useMovies();
   const [announcement, setAnnouncement] = useState("");
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      const type = searchParams.get("type");
-      const value = searchParams.get("value");
-      if (type && value) {
-        fetchMovies(type, value);
-      } else {
-        fetchMovies();
-      }
-    }
-  }, [status, searchParams]);
 
   useEffect(() => {
     if (!loading && movies.length > 0) {
       setAnnouncement(`Učitano ${movies.length} filmova`);
     }
   }, [movies, loading]);
-
-  const applyFilter = () => {
-    const params = new URLSearchParams();
-    if (filter.type && filter.value) {
-      params.set("type", filter.type);
-      params.set("value", filter.value);
-      fetchMovies(filter.type, filter.value);
-    } else {
-      fetchMovies();
-    }
-    router.push(`?${params.toString()}`);
-  };
-
-  const handleClear = () => {
-    setFilter({ type: "", value: "" });
-    fetchMovies();
-    router.push("?");
-  };
 
   return (
     <div>
@@ -74,13 +37,13 @@ export default function Explore() {
 
       <div className="mb-6 space-y-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <FilterSection
-            filter={filter}
-            setFilter={setFilter}
-            onApplyFilter={applyFilter}
-            onClear={handleClear}
-            loading={loading}
-          />
+          <Suspense fallback={null}>
+            <FilterSection
+              fetchMovies={fetchMovies}
+              onFilterApplied={setCurrentFilter}
+              loading={loading}
+            />
+          </Suspense>
 
           <div className="flex gap-2 items-center justify-between w-full sm:w-auto flex-wrap sm:flex-nowrap">
             <Button
@@ -119,7 +82,7 @@ export default function Explore() {
 
       {!loading && (
         <>
-          {filter.type && filter.value && (
+          {currentFilter.type && currentFilter.value && (
             <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-2 dark:border-blue-800 dark:bg-blue-900/20">
               <p className="text-sm text-blue-900 dark:text-blue-300">
                 {movies.length === 0
@@ -131,7 +94,7 @@ export default function Explore() {
             </div>
           )}
           {movies.length === 0 &&
-          (!filter.value || filter.value.length === 0) ? (
+          (!currentFilter.value || currentFilter.value.length === 0) ? (
             <Empty className="w-fit mx-auto border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 p-8 rounded-md">
               <EmptyHeader>
                 <EmptyMedia variant="icon">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -11,20 +12,51 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export function FilterSection({
-  filter,
-  setFilter,
-  onApplyFilter,
-  onClear,
-  loading,
-}) {
+export function FilterSection({ fetchMovies, onFilterApplied, loading }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [filter, setFilter] = useState({
+    type: searchParams.get("type") || "",
+    value: searchParams.get("value") || "",
+  });
+
+  useEffect(() => {
+    setFilter({
+      type: searchParams.get("type") || "",
+      value: searchParams.get("value") || "",
+    });
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (filter.type && filter.value) {
+      applyFilter();
+    } else {
+      fetchMovies();
+    }
+  }, []);
+
+  const applyFilter = () => {
+    const params = new URLSearchParams();
+    if (filter.type && filter.value) {
+      params.set("type", filter.type);
+      params.set("value", filter.value);
+      fetchMovies(filter.type, filter.value);
+    } else {
+      fetchMovies();
+    }
+    router.push(`?${params.toString()}`);
+    onFilterApplied(filter);
+  };
+
   const handleClear = () => {
     setFilter({ ...filter, value: "" });
-    if (onClear) {
-      onClear();
-    }
+    fetchMovies();
+    router.push("?");
+    onFilterApplied({ ...filter, value: "" });
   };
+
   return (
     <Card className="w-full">
       <CardContent className="p-4 w-full">
@@ -61,7 +93,7 @@ export function FilterSection({
                 onChange={(e) =>
                   setFilter({ ...filter, value: e.target.value })
                 }
-                onKeyPress={(e) => e.key === "Enter" && onApplyFilter()}
+                onKeyPress={(e) => e.key === "Enter" && applyFilter()}
                 placeholder="Vrijednost..."
                 className="pr-8"
               />
@@ -82,7 +114,7 @@ export function FilterSection({
           </div>
 
           <Button
-            onClick={onApplyFilter}
+            onClick={applyFilter}
             disabled={!filter.type || !filter.value || loading}
             className="w-full sm:w-auto"
           >

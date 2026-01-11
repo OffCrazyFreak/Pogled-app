@@ -1,8 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { FilterSection } from "@/components/filter-section";
 import { MovieCard } from "@/components/movie-card";
 import { useMovies } from "@/hooks/use-movies";
@@ -26,12 +25,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Watched() {
   const { data: session, status } = useSession();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [filter, setFilter] = useState({
-    type: searchParams.get("type") || "",
-    value: searchParams.get("value") || "",
-  });
+  const [currentFilter, setCurrentFilter] = useState({ type: "", value: "" });
   const [movieRatings, setMovieRatings] = useState({});
   const { movies, loading, fetchMovies, fetchAndSave, deleteMovie, deleteAll } =
     useMovies();
@@ -39,45 +33,38 @@ export default function Watched() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      const type = searchParams.get("type");
-      const value = searchParams.get("value");
-      if (type && value) {
-        fetchMovies(type, value);
-      } else {
-        fetchMovies();
-      }
-    }
-    // Load movie ratings from localStorage
-    const personalData = JSON.parse(
-      localStorage.getItem("DRUMREtempMoviesPersonalData") ||
-        '{"ratedMovies":{},"savedMovies":{}}'
-    );
-    setMovieRatings(personalData.ratedMovies);
-
-    // Listen for storage changes
-    const handleStorageChange = () => {
+      // Load movie ratings from localStorage
       const personalData = JSON.parse(
         localStorage.getItem("DRUMREtempMoviesPersonalData") ||
           '{"ratedMovies":{},"savedMovies":{}}'
       );
       setMovieRatings(personalData.ratedMovies);
-    };
 
-    // Listen for custom event
-    const handleMovieRatingsChanged = (event) => {
-      setMovieRatings(event.detail);
-    };
+      // Listen for storage changes
+      const handleStorageChange = () => {
+        const personalData = JSON.parse(
+          localStorage.getItem("DRUMREtempMoviesPersonalData") ||
+            '{"ratedMovies":{},"savedMovies":{}}'
+        );
+        setMovieRatings(personalData.ratedMovies);
+      };
 
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("movieRatingsChanged", handleMovieRatingsChanged);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener(
-        "movieRatingsChanged",
-        handleMovieRatingsChanged
-      );
-    };
-  }, [status, searchParams]);
+      // Listen for custom event
+      const handleMovieRatingsChanged = (event) => {
+        setMovieRatings(event.detail);
+      };
+
+      window.addEventListener("storage", handleStorageChange);
+      window.addEventListener("movieRatingsChanged", handleMovieRatingsChanged);
+      return () => {
+        window.removeEventListener(
+          "movieRatingsChanged",
+          handleMovieRatingsChanged
+        );
+      };
+    }
+    return;
+  }, [status]);
 
   useEffect(() => {
     const ratedMoviesList = movies.filter(
@@ -88,24 +75,6 @@ export default function Watched() {
       setAnnouncement(`Učitano ${ratedMoviesList.length} filmova`);
     }
   }, [movieRatings, movies, loading]);
-
-  const applyFilter = () => {
-    const params = new URLSearchParams();
-    if (filter.type && filter.value) {
-      params.set("type", filter.type);
-      params.set("value", filter.value);
-      fetchMovies(filter.type, filter.value);
-    } else {
-      fetchMovies();
-    }
-    router.push(`?${params.toString()}`);
-  };
-
-  const handleClear = () => {
-    setFilter({ type: "", value: "" });
-    fetchMovies();
-    router.push("?");
-  };
 
   const ratedMoviesList = movies.filter(
     (movie) => movieRatings[movie._id]?.rate && movieRatings[movie._id].rate > 0
@@ -127,13 +96,13 @@ export default function Watched() {
 
       <div className="mb-6 space-y-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <FilterSection
-            filter={filter}
-            setFilter={setFilter}
-            onApplyFilter={applyFilter}
-            onClear={handleClear}
-            loading={loading}
-          />
+          <Suspense fallback={null}>
+            <FilterSection
+              fetchMovies={fetchMovies}
+              onFilterApplied={setCurrentFilter}
+              loading={loading}
+            />
+          </Suspense>
 
           <div className="flex gap-2 items-center justify-between w-full sm:w-auto flex-wrap sm:flex-nowrap">
             <Button
@@ -172,7 +141,7 @@ export default function Watched() {
 
       {!loading && (
         <>
-          {filter.type && filter.value && (
+          {currentFilter.type && currentFilter.value && (
             <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-2 dark:border-blue-800 dark:bg-blue-900/20">
               <p className="text-sm text-blue-900 dark:text-blue-300">
                 {ratedMoviesList.length === 0

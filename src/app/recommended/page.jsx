@@ -1,8 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { FilterSection } from "@/components/filter-section";
 import { MovieCard } from "@/components/movie-card";
 import { useMovies } from "@/hooks/use-movies";
@@ -26,12 +25,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Recommended() {
   const { data: session, status } = useSession();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [filter, setFilter] = useState({
-    type: searchParams.get("type") || "",
-    value: searchParams.get("value") || "",
-  });
+  const [currentFilter, setCurrentFilter] = useState({ type: "", value: "" });
   const [savedMovies, setSavedMovies] = useState({});
   const [movieRatings, setMovieRatings] = useState({});
   const { movies, loading, fetchMovies, fetchAndSave, deleteMovie, deleteAll } =
@@ -40,45 +34,34 @@ export default function Recommended() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      const type = searchParams.get("type");
-      const value = searchParams.get("value");
-      if (type && value) {
-        fetchMovies(type, value);
-      } else {
-        fetchMovies();
-      }
+      // Get saved and rated movies to exclude from recommendations
+      const personalData = JSON.parse(
+        localStorage.getItem("DRUMREtempMoviesPersonalData") ||
+          '{"ratedMovies":{},"savedMovies":{}}'
+      );
+      setSavedMovies(personalData.savedMovies);
+      setMovieRatings(personalData.ratedMovies);
+
+      // Listen for custom events
+      const handleSavedMoviesChanged = (event) => {
+        setSavedMovies(event.detail);
+      };
+      const handleMovieRatingsChanged = (event) => {
+        setMovieRatings(event.detail);
+      };
+
+      window.addEventListener("savedMoviesChanged", handleSavedMoviesChanged);
+      window.addEventListener("movieRatingsChanged", handleMovieRatingsChanged);
+
+      return () => {
+        window.removeEventListener(
+          "movieRatingsChanged",
+          handleMovieRatingsChanged
+        );
+      };
     }
-
-    // Get saved and rated movies to exclude from recommendations
-    const personalData = JSON.parse(
-      localStorage.getItem("DRUMREtempMoviesPersonalData") ||
-        '{"ratedMovies":{},"savedMovies":{}}'
-    );
-    setSavedMovies(personalData.savedMovies);
-    setMovieRatings(personalData.ratedMovies);
-
-    // Listen for custom events
-    const handleSavedMoviesChanged = (event) => {
-      setSavedMovies(event.detail);
-    };
-    const handleMovieRatingsChanged = (event) => {
-      setMovieRatings(event.detail);
-    };
-
-    window.addEventListener("savedMoviesChanged", handleSavedMoviesChanged);
-    window.addEventListener("movieRatingsChanged", handleMovieRatingsChanged);
-
-    return () => {
-      window.removeEventListener(
-        "savedMoviesChanged",
-        handleSavedMoviesChanged
-      );
-      window.removeEventListener(
-        "movieRatingsChanged",
-        handleMovieRatingsChanged
-      );
-    };
-  }, [status, searchParams]);
+    return;
+  }, [status]);
 
   useEffect(() => {
     const recommendedMovies = movies.filter(
@@ -88,24 +71,6 @@ export default function Recommended() {
       setAnnouncement(`Učitano ${recommendedMovies.length} filmova`);
     }
   }, [savedMovies, movieRatings, movies, loading]);
-
-  const applyFilter = () => {
-    const params = new URLSearchParams();
-    if (filter.type && filter.value) {
-      params.set("type", filter.type);
-      params.set("value", filter.value);
-      fetchMovies(filter.type, filter.value);
-    } else {
-      fetchMovies();
-    }
-    router.push(`?${params.toString()}`);
-  };
-
-  const handleClear = () => {
-    setFilter({ type: "", value: "" });
-    fetchMovies();
-    router.push("?");
-  };
 
   // Filter out movies that are already saved or rated
   const recommendedMovies = movies.filter(
@@ -120,13 +85,13 @@ export default function Recommended() {
 
       <div className="mb-6 space-y-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <FilterSection
-            filter={filter}
-            setFilter={setFilter}
-            onApplyFilter={applyFilter}
-            onClear={handleClear}
-            loading={loading}
-          />
+          <Suspense fallback={null}>
+            <FilterSection
+              fetchMovies={fetchMovies}
+              onFilterApplied={setCurrentFilter}
+              loading={loading}
+            />
+          </Suspense>
 
           <div className="flex gap-2 items-center justify-between w-full sm:w-auto flex-wrap sm:flex-nowrap">
             <Button
@@ -165,7 +130,7 @@ export default function Recommended() {
 
       {!loading && (
         <>
-          {filter.type && filter.value && (
+          {currentFilter.type && currentFilter.value && (
             <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-2 dark:border-blue-800 dark:bg-blue-900/20">
               <p className="text-sm text-blue-900 dark:text-blue-300">
                 {recommendedMovies.length === 0

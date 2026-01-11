@@ -16,14 +16,16 @@ export function Navbar() {
   return (
     <header className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
       <div className="mx-auto flex max-w-7xl items-center justify-between p-2 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-2">
-          <SidebarTrigger className="lg:hidden" />
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger className="lg:hidden" />
 
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white uppercase flex items-center gap-1">
-            <span>P</span>
-            <Eye className="size-5" />
-            <span>gled</span>
-          </h1>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white uppercase flex items-center gap-1">
+              <span>P</span>
+              <Eye className="size-5" />
+              <span>gled</span>
+            </h1>
+          </div>
 
           <nav className="hidden lg:flex items-center gap-4">
             {navigationLinks.map((item) => (
