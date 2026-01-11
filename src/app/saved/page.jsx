@@ -3,8 +3,8 @@
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FilterSection } from "@/components/dashboard/filter-section";
-import { MovieCard } from "@/components/dashboard/movie-card";
+import { FilterSection } from "@/components/filter-section";
+import { MovieCard } from "@/components/movie-card";
 import { useMovies } from "@/hooks/use-movies";
 import { Spinner } from "@/components/ui/spinner";
 import {
