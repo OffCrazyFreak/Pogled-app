@@ -1,7 +1,6 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import { MovieCard } from "@/components/movie-card";
 import { useMovies } from "@/hooks/use-movies";
@@ -16,31 +15,12 @@ import {
 } from "@/components/ui/empty";
 import { TrendingUpIcon, Download, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
-const TIME_RANGES = [
-  { key: "today", label: "Danas" },
-  { key: "week", label: "Tjedan" },
-  { key: "month", label: "Mjesec" },
-  { key: "year", label: "Godina" },
-  { key: "all", label: "Sve vrijeme" },
-];
+import { TimeRangeTabs } from "@/components/time-range-tabs";
 
 export default function Popular() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <PopularContent />
-    </Suspense>
-  );
-}
-
-function PopularContent() {
   const { data: session, status } = useSession();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [timeRange, setTimeRange] = useState(
-    searchParams.get("range") || "all"
-  );
+  const [timeRange, setTimeRange] = useState("today");
   const { movies, loading, fetchMovies, fetchAndSave, deleteMovie, deleteAll } =
     useMovies();
   const [announcement, setAnnouncement] = useState("");
@@ -56,20 +36,6 @@ function PopularContent() {
       setAnnouncement(`Učitano ${movies.length} filmova`);
     }
   }, [movies, loading]);
-
-  useEffect(() => {
-    // Update URL when time range changes
-    const params = new URLSearchParams();
-    if (timeRange !== "all") {
-      params.set("range", timeRange);
-    }
-    const newUrl = `?${params.toString()}`;
-    router.replace(newUrl, { scroll: false });
-  }, [timeRange, router]);
-
-  const handleTimeRangeChange = (range) => {
-    setTimeRange(range);
-  };
 
   // Sort movies by simulated popularity score with time range consideration
   const getPopularityScore = (movie, range) => {
@@ -106,30 +72,9 @@ function PopularContent() {
 
       <div className="mb-4 space-y-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          {/* Time Range Tabs */}
-          <div
-            role="tablist"
-            className="w-full sm:w-auto flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide snap-x snap-mandatory"
-          >
-            {TIME_RANGES.map((range) => (
-              <Button
-                key={range.key}
-                role="tab"
-                aria-selected={timeRange === range.key}
-                variant={timeRange === range.key ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleTimeRangeChange(range.key)}
-                className={cn(
-                  "transition-all flex-shrink-0 snap-start",
-                  timeRange === range.key
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "hover:bg-muted"
-                )}
-              >
-                {range.label}
-              </Button>
-            ))}
-          </div>
+          <Suspense fallback={null}>
+            <TimeRangeTabs onRangeApplied={setTimeRange} />
+          </Suspense>
 
           <div className="flex gap-2 items-center justify-between w-full sm:w-auto flex-wrap sm:flex-nowrap">
             <Button
