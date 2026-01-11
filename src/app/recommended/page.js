@@ -81,10 +81,13 @@ export default function Recommended() {
   }, [status, searchParams]);
 
   useEffect(() => {
+    const recommendedMovies = movies.filter(
+      (movie) => !savedMovies[movie._id] && !movieRatings[movie._id]?.rate
+    );
     if (!loading && recommendedMovies.length > 0) {
       setAnnouncement(`Učitano ${recommendedMovies.length} filmova`);
     }
-  }, [recommendedMovies, loading]);
+  }, [savedMovies, movieRatings, movies, loading]);
 
   const applyFilter = () => {
     const params = new URLSearchParams();

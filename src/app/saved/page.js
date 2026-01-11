@@ -79,10 +79,11 @@ export default function Favorites() {
   }, [status, searchParams]);
 
   useEffect(() => {
+    const savedMoviesList = movies.filter((movie) => savedMovies[movie._id]);
     if (!loading && savedMoviesList.length > 0) {
       setAnnouncement(`Učitano ${savedMoviesList.length} filmova`);
     }
-  }, [savedMoviesList, loading]);
+  }, [savedMovies, movies, loading]);
 
   const applyFilter = () => {
     const params = new URLSearchParams();

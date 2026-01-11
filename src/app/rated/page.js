@@ -80,10 +80,14 @@ export default function Watched() {
   }, [status, searchParams]);
 
   useEffect(() => {
+    const ratedMoviesList = movies.filter(
+      (movie) =>
+        movieRatings[movie._id]?.rate && movieRatings[movie._id].rate > 0
+    );
     if (!loading && ratedMoviesList.length > 0) {
       setAnnouncement(`Učitano ${ratedMoviesList.length} filmova`);
     }
-  }, [ratedMoviesList, loading]);
+  }, [movieRatings, movies, loading]);
 
   const applyFilter = () => {
     const params = new URLSearchParams();
