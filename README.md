@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Pogled Movies App
 
-## Getting Started
+## Description
 
-First, run the development server:
+Web application for discovering movies, exploring popular and highly-rated films, getting personalized recommendations, and saving your favorite movies. Features include user authentication, movie filtering, and integration with external movie databases.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Link
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Deployed and available on: [pogled.vercel.app](https://pogled.vercel.app/)
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Visuals
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+![Movie App Screenshot](https://via.placeholder.com/800x400?text=Movie+App+Screenshot) (replace with actual screenshot)
 
-## Learn More
+## Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **Frontend:** Next.js, React, Tailwind CSS, Shadcn
+- **Backend:** Next.js API Routes, MongoDB (Mongoose)
+- **Authentication:** NextAuth.js
+- **APIs:** The Movie Database (TMDb), Trakt.tv, OMDB, YouTube
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Attribution
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Created by: Jakov Jakovac, Stela Dermit, Marko Miškić, Borna Rebić Taučer
 
-## Deploy on Vercel
+## License [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+[cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
+[cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png
+[cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-cyan.svg
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This work is licensed under a
+[Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License][cc-by-nc-sa].
+
+## How to run
+
+### Prerequisites
+
+- Node.js 18+ (or latest LTS)
+- MongoDB (local or remote, e.g., MongoDB Atlas)
+- API keys for TMDb, Trakt, and other services (see environment variables)
+
+### Startup flow
+
+- Set up the database and environment variables, then start the application.
+
+### Running the app
+
+1. Database (MongoDB)
+
+   - Set up a MongoDB instance (local or cloud).
+   - Update connection string in environment variables.
+
+2. Environment setup
+
+   - Configure environment variables by copying the .env.local.example file.
+   - You can create a `.env.local` file in the root.
+
+3. Install and run
+
+   - Install dependencies: `npm install`
+   - Run development server: `npm run dev`
+   - The app runs on port 3000 by default: [http://localhost:3000](http://localhost:3000/)
