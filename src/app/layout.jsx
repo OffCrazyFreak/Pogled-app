@@ -19,6 +19,9 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Pogled",
   description: "Aplikacija za praćenje gledanja i preporuku filmova",
+  icons: {
+    icon: "/pogled_logo.ico",
+  },
 };
 
 export default function RootLayout({ children }) {
