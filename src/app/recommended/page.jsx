@@ -37,37 +37,47 @@ export default function Recommended() {
     fetchRatedMovies,
     deleteMovie,
     deleteAll,
+    fetchRecommendations,
   } = useMovies();
   const [announcement, setAnnouncement] = useState("");
+  const [recommendations, setRecommendations] = useState([]);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
 
   useEffect(() => {
     if (status === "authenticated") {
       fetchSavedMovies();
       fetchRatedMovies();
+      loadRecommendations();
     }
   }, [status]);
 
-  useEffect(() => {
-    const recommendedMovies = movies.filter((movie) => {
-      const isSaved = savedMovies.some((sm) => sm.movieId === movie._id);
-      const isRated = ratedMovies.some(
-        (rm) => rm.movieId === movie._id && rm.rating > 0
-      );
-      return !isSaved && !isRated;
-    });
-    if (!loading && recommendedMovies.length > 0) {
-      setAnnouncement(`Učitano ${recommendedMovies.length} filmova`);
+  const loadRecommendations = async () => {
+    setLoadingRecommendations(true);
+    try {
+      const recs = await fetchRecommendations();
+      setRecommendations(recs);
+    } catch (error) {
+      console.error("Error loading recommendations:", error);
+    } finally {
+      setLoadingRecommendations(false);
     }
-  }, [savedMovies, ratedMovies, movies, loading]);
+  };
 
-  // Filter out movies that are already saved or rated
-  const recommendedMovies = movies.filter((movie) => {
-    const isSaved = savedMovies.some((sm) => sm.movieId === movie._id);
-    const isRated = ratedMovies.some(
-      (rm) => rm.movieId === movie._id && rm.rating > 0
-    );
-    return !isSaved && !isRated;
-  });
+  useEffect(() => {
+    if (!loadingRecommendations && recommendations.length > 0) {
+      setAnnouncement(`Učitano ${recommendations.length} preporuka`);
+    }
+  }, [recommendations, loadingRecommendations]);
+
+  const handleSaveToggle = async () => {
+    await fetchSavedMovies();
+    await loadRecommendations();
+  };
+
+  const handleRatingChange = async () => {
+    await fetchRatedMovies();
+    await loadRecommendations();
+  };
 
   return (
     <div>
@@ -120,20 +130,22 @@ export default function Recommended() {
         </div>
       )}
 
-      {!loading && (
-        <>
-          {currentFilter.type && currentFilter.value && (
-            <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-2 dark:border-blue-800 dark:bg-blue-900/20">
-              <p className="text-sm text-blue-900 dark:text-blue-300">
-                {recommendedMovies.length === 0
-                  ? "Nema rezultata za odabrani filter."
-                  : `Pronađeno ${recommendedMovies.length} ${
-                      recommendedMovies.length === 1 ? "rezultat" : "rezultata"
-                    }`}
-              </p>
+      {loadingRecommendations && (
+        <div className="flex min-h-[400px] items-center justify-center">
+          <div className="text-center">
+            <div className="mb-4">
+              <Spinner className="size-8" />
             </div>
-          )}
-          {recommendedMovies.length === 0 ? (
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Učitavanje personalizovanih preporuka...
+            </p>
+          </div>
+        </div>
+      )}
+
+      {!loadingRecommendations && (
+        <>
+          {recommendations.length === 0 ? (
             <Empty className="w-fit mx-auto border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 p-8 rounded-md">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
@@ -143,27 +155,21 @@ export default function Recommended() {
                   Nema preporučenih filmova
                 </EmptyTitle>
                 <EmptyDescription className="text-sm text-gray-500 dark:text-gray-400">
-                  Svi filmovi su već spremljeni ili ocijenjeni
+                  Svi dostupni filmovi su već spremljeni ili ocijenjeni
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {recommendedMovies.map((movie) => (
+              {recommendations.map((movie) => (
                 <MovieCard
                   key={movie._id}
                   movie={movie}
                   onDelete={deleteMovie}
                   isSaved={false}
                   userRating={0}
-                  onSaveToggle={() => {
-                    fetchSavedMovies();
-                    fetchRatedMovies();
-                  }}
-                  onRatingChange={() => {
-                    fetchSavedMovies();
-                    fetchRatedMovies();
-                  }}
+                  onSaveToggle={handleSaveToggle}
+                  onRatingChange={handleRatingChange}
                 />
               ))}
             </div>
