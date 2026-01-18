@@ -94,6 +94,13 @@ export default function Popular() {
 
   // Sort movies by real popularity score from database
   const popularMovies = [...movies]
+    .filter((movie) => {
+      // Filter out movies that are already rated (watched)
+      const isRated = ratedMovies.some(
+        (rm) => rm.movieId === movie._id && rm.rating > 0
+      );
+      return !isRated;
+    })
     .map((movie) => ({
       ...movie,
       popularityScore: popularityScores[movie._id] || 0,
