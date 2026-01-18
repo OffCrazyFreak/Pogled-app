@@ -63,3 +63,60 @@ This work is licensed under a
    - Install dependencies: `npm install`
    - Run development server: `npm run dev`
    - The app runs on port 3000 by default: [http://localhost:3000](http://localhost:3000/)
+
+## Google OAuth Setup
+
+1. Open [Google Cloud Console](https://console.cloud.google.com/)
+
+2. Create a new project (name for example `Pogled Movies App` and id for example `pogled-movies-app`) and open it
+
+3. Create a new OAuth client ID credential under `APIs & Services > Credentials`
+
+   - Configure consent screen (`OAuth consent screen`)
+
+     - Input app name (for example `Pogled Movies App`) and user support email (your account email)
+     - Set Audience to External so users outside your organisation can login
+     - Add contact email (your account email)
+
+   - Create OAuth client ID (`Credentials`)
+
+     - Set application type to Web application
+     - Change name or leave as is
+     - Add Authorized JavaScript origins (your app domain): `http://localhost:3000`, `https://pogled.netlify.app`
+     - Add Authorized redirect URIs (your app domain): `http://localhost:3000/api/auth/callback/google`, `https://pogled.netlify.app/api/auth/callback/google`
+
+4. Copy-paste Client ID and Client Secret to your `.env.local` file as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
+
+5. Publish your app to Production under `Audience > Publishing status > Publish app`
+
+## Deployment Guide (Netlify)
+
+### 1. Local Build Verification (Optional)
+
+```bash
+# Build the application locally to verify everything works
+npm run build
+```
+
+### 2. Netlify Configuration
+
+1. **Initial Setup**
+
+   - Create a Netlify account
+   - Connect your GitHub account
+   - Import your repository for continuous deployment
+
+2. **Environment Variables**
+
+   Copy these values as secrets from your `.env.local`:
+
+   - `MONGODB_URI`
+   - `NEXTAUTH_SECRET`
+   - `NEXTAUTH_URL` - Set to `https://pogled.netlify.app`
+   - `GOOGLE_CLIENT_ID`
+   - `GOOGLE_CLIENT_SECRET`
+   - `TMDB_API_KEY`
+   - `TRAKT_CLIENT_ID`
+   - `TRAKT_CLIENT_SECRET`
+   - `OMDB_API_KEY`
+   - `YOUTUBE_API_KEY`
