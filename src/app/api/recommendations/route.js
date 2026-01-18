@@ -217,6 +217,7 @@ export async function GET(request) {
         return {
           ...movie.toObject(),
           saveCount: movieStats[movieId]?.saveCount || 0,
+          ratingCount: movieStats[movieId]?.ratingCount || 0,
           appRating:
             movieStats[movieId]?.ratingCount > 0
               ? movieStats[movieId].totalRating /
