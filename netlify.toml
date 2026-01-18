@@ -1,0 +1,7 @@
+[build]
+  publish = ".next"
+  functions = "netlify/functions"
+
+[[scheduled_functions]]
+  function = "fetch-movies"
+  schedule = "@daily"
