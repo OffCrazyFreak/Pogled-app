@@ -1,4 +1,4 @@
-# Pogled Movies App
+# Pogled movies app
 
 ## Description
 
@@ -10,7 +10,11 @@ Deployed and available on: [pogled.vercel.app](https://pogled.vercel.app/)
 
 ## Visuals
 
-![Movie App Screenshot](https://via.placeholder.com/800x400?text=Movie+App+Screenshot) (replace with actual screenshot)
+<p align="center">
+  <img width="90%" alt="Pogled movies app" src="https://github.com/user-attachments/assets/69fe2908-a19e-4c9f-bc0d-ac4d7775b6ff" /> 
+</p>
+
+
 
 ## Tech Stack
 
