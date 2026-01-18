@@ -273,6 +273,17 @@ export function MovieCard({
                 )}
               </div>
             )}
+            {movie.appRating && movie.appRating > 0 && (
+              <div className="flex items-center gap-1.5">
+                <Star
+                  className="size-4 fill-purple-400 stroke-purple-400"
+                  aria-hidden="true"
+                />
+                <span className="">
+                  Pogled: {movie.appRating.toFixed(1)} / 10
+                </span>
+              </div>
+            )}
           </div>
 
           {movie.traktWatchers && (

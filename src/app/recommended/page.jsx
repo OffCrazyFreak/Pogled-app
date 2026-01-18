@@ -79,6 +79,34 @@ export default function Recommended() {
     await loadRecommendations();
   };
 
+  // Apply filters to recommendations
+  const filteredRecommendations = recommendations.filter((movie) => {
+    if (!currentFilter.type || !currentFilter.value) {
+      return true; // No filter applied
+    }
+
+    const filterValue = currentFilter.value.toLowerCase();
+
+    switch (currentFilter.type) {
+      case "title":
+        return movie.title.toLowerCase().includes(filterValue);
+      case "year":
+        return movie.year === parseInt(currentFilter.value);
+      case "yearMin":
+        return movie.year >= parseInt(currentFilter.value);
+      case "yearMax":
+        return movie.year <= parseInt(currentFilter.value);
+      case "rating":
+        return movie.rating >= parseFloat(currentFilter.value);
+      case "genre":
+        return movie.genre && movie.genre.toLowerCase().includes(filterValue);
+      case "source":
+        return movie.source === currentFilter.value.toUpperCase();
+      default:
+        return true;
+    }
+  });
+
   return (
     <div>
       <div aria-live="polite" aria-atomic="true" className="sr-only">
@@ -136,32 +164,33 @@ export default function Recommended() {
             <div className="mb-4">
               <Spinner className="size-8" />
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Učitavanje personalizovanih preporuka...
-            </p>
           </div>
         </div>
       )}
 
       {!loadingRecommendations && (
         <>
-          {recommendations.length === 0 ? (
+          {filteredRecommendations.length === 0 ? (
             <Empty className="w-fit mx-auto border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 p-8 rounded-md">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <SparklesIcon className="h-12 w-12 text-gray-400 dark:text-gray-500" />
                 </EmptyMedia>
                 <EmptyTitle className="text-base font-medium text-gray-900 dark:text-white">
-                  Nema preporučenih filmova
+                  {recommendations.length === 0
+                    ? "Nema preporučenih filmova"
+                    : "Nema rezultata za primijenjene filtere"}
                 </EmptyTitle>
                 <EmptyDescription className="text-sm text-gray-500 dark:text-gray-400">
-                  Svi dostupni filmovi su već spremljeni ili ocijenjeni
+                  {recommendations.length === 0
+                    ? "Svi dostupni filmovi su već spremljeni ili ocijenjeni"
+                    : "Pokušajte prilagoditi filtere"}
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {recommendations.map((movie) => (
+              {filteredRecommendations.map((movie) => (
                 <MovieCard
                   key={movie._id}
                   movie={movie}

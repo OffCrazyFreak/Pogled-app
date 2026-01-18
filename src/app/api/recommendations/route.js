@@ -120,6 +120,31 @@ export async function GET(request) {
       _id: { $in: movieIds },
     });
 
+    // Get all user interactions for each movie (for saveCount and avg user rating)
+    const allMovieInteractions = await SavedMovie.find({
+      movieId: { $in: movieIds },
+    });
+
+    const movieStats = {};
+    allMovieInteractions.forEach((interaction) => {
+      const movieId = interaction.movieId.toString();
+      if (!movieStats[movieId]) {
+        movieStats[movieId] = {
+          saveCount: 0,
+          totalRating: 0,
+          ratingCount: 0,
+        };
+      }
+
+      if (interaction.saved) {
+        movieStats[movieId].saveCount++;
+      }
+      if (interaction.rating && interaction.rating > 0) {
+        movieStats[movieId].totalRating += interaction.rating;
+        movieStats[movieId].ratingCount++;
+      }
+    });
+
     // Calculate final recommendation scores
     const recommendations = moviesDetails
       .map((movie) => {
@@ -191,6 +216,12 @@ export async function GET(request) {
 
         return {
           ...movie.toObject(),
+          saveCount: movieStats[movieId]?.saveCount || 0,
+          appRating:
+            movieStats[movieId]?.ratingCount > 0
+              ? movieStats[movieId].totalRating /
+                movieStats[movieId].ratingCount
+              : 0,
           recommendationScore: totalScore,
           scoreBreakdown: {
             similarUserScore,
