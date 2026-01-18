@@ -6,7 +6,7 @@ Web application for discovering movies, exploring popular and highly-rated films
 
 ## Link
 
-Deployed and available on: [pogled.vercel.app](https://pogled.vercel.app/)
+Deployed and available on: [pogled.netlify.app](https://pogled.netlify.app/)
 
 ## Visuals
 
