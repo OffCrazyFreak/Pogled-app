@@ -236,7 +236,7 @@ export function MovieCard({
                       IMDb: {movie.imdbRating.toFixed(1)} / 10
                     </Link>
                   ) : (
-                    <span className="font-medium">
+                    <span className="">
                       IMDb: {movie.imdbRating.toFixed(1)} / 10
                     </span>
                   )}
